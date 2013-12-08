@@ -1,19 +1,17 @@
 package idc.cv.emotiondetector;
 
-import org.opencv.core.Core;
-
 import java.io.UnsupportedEncodingException;
 
-public class Main
-{
-    public static void main(String[] args) throws UnsupportedEncodingException
-    {
-        System.out.println("Hello, OpenCV");
+import org.opencv.core.Core;
 
-        // Load the native library.
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+public class Main {
 
-        new FaceRecognizer().recognize();
-    }
+	public static void main(String[] args) throws UnsupportedEncodingException {
+		System.out.println("Hello, OpenCV");
+
+		// Load the native library.
+		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+
+		new FacePartDetector().recognize("/images.jpg", "/haarcascade_eye.xml", "faceDetection.png");
+	}
 }
-
