@@ -24,7 +24,7 @@ public class VideoReader {
 		Mat edges = new Mat();
 		Mat frame = new Mat();
 
-		FacePartDetector faceRecognizer = new FacePartDetector();
+		FacePartDetector faceRecognizer = FacePartDetector.getInstance();
 		Integer index = 1;
 		while (videoCapture.read(frame) && index < 20) {
 			cvtColor(frame, edges, COLOR_RGB2GRAY);
@@ -33,7 +33,7 @@ public class VideoReader {
 
 			Canny(edges, edges, 0, 30);
 
-			faceRecognizer.recognize(frame, "/haarcascade_eye.xml", "edges" + (index++) + ".png");
+			faceRecognizer.detectAndWrite(frame, FacePartCascaders.EYE.getClasifier(), "edges" + (index++) + ".png");
 
 			frame = new Mat();
 		}
