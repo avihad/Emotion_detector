@@ -1,5 +1,6 @@
 package idc.cv.emotiondetector.utillities;
 
+import org.opencv.core.Mat;
 import org.opencv.highgui.VideoCapture;
 
 public enum VideoReader
@@ -10,7 +11,7 @@ public enum VideoReader
     {
         VideoCapture videoCapture = new VideoCapture();
 
-        videoCapture.open(videoFileName);
+        videoCapture.open(Utilities.readResource(videoFileName));
 
         if (!videoCapture.isOpened())
         {
@@ -18,5 +19,18 @@ public enum VideoReader
         }
 
         return videoCapture;
+    }
+
+    public void storeAsFrames(String videoFileName) throws Exception
+    {
+        VideoCapture videoCapture = open(videoFileName);
+
+        Mat newFrame = new Mat();
+        int frameNumber = 1;
+        while (videoCapture.read(newFrame) && frameNumber < 100)
+        {
+            Utilities.writeImageToFile("frame"+frameNumber+".png", newFrame);
+            frameNumber++;
+        }
     }
 }

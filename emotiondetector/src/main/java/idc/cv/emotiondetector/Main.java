@@ -3,17 +3,10 @@ package idc.cv.emotiondetector;
 import idc.cv.emotiondetector.detectors.MouthDetector;
 import idc.cv.emotiondetector.utillities.Optional;
 import idc.cv.emotiondetector.utillities.Utilities;
-import idc.cv.emotiondetector.utillities.VideoReader;
 import org.opencv.core.Core;
-import org.opencv.core.Mat;
 import org.opencv.core.Rect;
-import org.opencv.core.Size;
-import org.opencv.highgui.VideoCapture;
 
-import java.util.ArrayList;
 import java.util.List;
-
-import static org.opencv.imgproc.Imgproc.*;
 
 public class Main
 {
@@ -22,15 +15,30 @@ public class Main
         // Load the native library.
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-        Mat image = Utilities.createImageMat("/aviadSmile.png");
+        Optional<Rect> neutralMouth = MouthDetector.instance.detectMouth(Utilities.readImage("/neutral.png"));
+        Optional<Rect> smilingMouth = MouthDetector.instance.detectMouth(Utilities.readImage("/smile.png"));
 
-        List<Rect> mouthsAlongMovie = MovieMouthTracker.getMouthPositionsAlongMovie("/aviad.avi");
+        throwIfMouthIsNotFoundIn(neutralMouth, smilingMouth);
 
-        for (Rect mouth : mouthsAlongMovie)
+        System.out.println("neutral mouth is at: " + neutralMouth.get());
+        System.out.println("smiling mouth is at: " + smilingMouth.get());
+
+        for (Rect mouth : MovieMouthTracker.getMouthPositionsAlongMovie("/aviad.avi"))
         {
-            Utilities.drawRect(mouth, image);
+            System.out.println("mouth is at: " + mouth);
+        }
+    }
+
+    private static void throwIfMouthIsNotFoundIn(Optional<Rect> neutralMouth, Optional<Rect> smilingMouth) throws Exception
+    {
+        if (!neutralMouth.isPresent())
+        {
+            throw new Exception("Couldn't find neutral mouth");
         }
 
-        Utilities.writeImageToFile("faceRecognition.png", image);
+        if (!smilingMouth.isPresent())
+        {
+            throw new Exception("Couldn't find smiling mouth");
+        }
     }
 }

@@ -30,7 +30,7 @@ public class Utilities
         return null;
     }
 
-    public static Mat createImageMat(String fileName) throws UnsupportedEncodingException
+    public static Mat readImage(String fileName) throws UnsupportedEncodingException
     {
         return Highgui.imread(Utilities.readResource(fileName));
     }
