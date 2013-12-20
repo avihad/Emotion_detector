@@ -5,19 +5,20 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Rect;
 
-public class Main {
+public class Main
+{
+    public static void main(String[] args) throws Exception
+    {
+        System.out.println("Hello, OpenCV");
 
-	public static void main(String[] args) throws Exception {
-		System.out.println("Hello, OpenCV");
+        // Load the native library.
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-		// Load the native library.
-		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+        Mat image = Utility.createImageMat("/images.jpg");
+        Pair<Rect, Rect> detectedEyes = EyeDetector.instance.detectEyes(image);
 
-		Mat image = Utility.createImageMat("/images.jpg");
-		Pair<Rect, Rect> detectedEyes = EyeDetector.getInstance().detectEyes(image);
-
-		MatOfRect face = FacePartDetector.getInstance().detect(image, FacePartCascaders.FACE.getClasifier());
-		FacePartDetector.getInstance().write(face, image, "faceRecognition.png");
-		System.out.println(face);
-	}
+        MatOfRect face = FacePartDetector.instance.detect(image, FacePartCascades.FACE.getCascadeClassifier());
+        FacePartDetector.instance.write(face, image, "faceRecognition.png");
+        System.out.println(face);
+    }
 }

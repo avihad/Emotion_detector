@@ -1,32 +1,16 @@
 package idc.cv.emotiondetector;
 
-import java.io.UnsupportedEncodingException;
-
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Rect;
 
-public class EyeDetector
+public enum EyeDetector
 {
+    instance;
 
-    private static final EyeDetector instance = new EyeDetector();
-
-    private EyeDetector()
-    {
-    }
-
-    public static EyeDetector getInstance()
-    {
-        return instance;
-    }
-
-    /**
-     * @throws UnsupportedEncodingException
-     */
     public Pair<Rect, Rect> detectEyes(Mat image) throws Exception
     {
-
-        MatOfRect eyes = FacePartDetector.getInstance().detect(image, FacePartCascaders.EYE.getClasifier());
+        MatOfRect eyes = FacePartDetector.instance.detect(image, FacePartCascades.EYE.getCascadeClassifier());
 
         if (eyes.toArray().length != 2)
         {
