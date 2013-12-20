@@ -1,5 +1,6 @@
 package idc.cv.emotiondetector;
 
+import idc.cv.emotiondetector.utillities.Utilities;
 import org.opencv.objdetect.CascadeClassifier;
 
 public enum FacePartCascade

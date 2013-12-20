@@ -1,4 +1,4 @@
-package idc.cv.emotiondetector;
+package idc.cv.emotiondetector.utillities;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -58,7 +58,7 @@ public class Utilities
         Core.rectangle(image, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 255, 0));
     }
 
-    private static void writeImageToFile(String fileName, Mat image)
+    public static void writeImageToFile(String fileName, Mat image)
     {
         System.out.println(String.format("Writing %s", fileName));
         Highgui.imwrite(fileName, image);

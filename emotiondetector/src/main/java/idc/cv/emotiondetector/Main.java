@@ -1,8 +1,11 @@
 package idc.cv.emotiondetector;
 
+import idc.cv.emotiondetector.utillities.Utilities;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Rect;
+
+import java.util.List;
 
 public class Main
 {
@@ -13,15 +16,15 @@ public class Main
         // Load the native library.
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-        Mat image = Utilities.createImageMat("/edges5.png");
+        Mat image = Utilities.createImageMat("/aviadSmile.png");
 
-        Pair<Rect, Rect> eyes = EyeDetector.instance.detectEyes(image);
+        List<Rect> mouthsAlongMovie = VideoReader.instance.getMouthsAlongMovie(Utilities.readResource("/aviad.avi"));
 
-        Utilities.drawRect(eyes.first, image);
-        Utilities.drawRect(eyes.second, image);
+        for (Rect mouth : mouthsAlongMovie)
+        {
+            Utilities.drawRect(mouth, image);
+        }
 
-        Rect mouthRect = MouthDetector.instance.detectMouth(image);
-
-        Utilities.drawRectAndStore(mouthRect, image, "faceRecognition.png");
+        Utilities.writeImageToFile("faceRecognition.png", image);
     }
 }
