@@ -1,4 +1,4 @@
-package idc.cv.emotiondetector;
+package idc.cv.emotiondetector.detectors;
 
 import idc.cv.emotiondetector.utillities.Utilities;
 import org.opencv.objdetect.CascadeClassifier;
