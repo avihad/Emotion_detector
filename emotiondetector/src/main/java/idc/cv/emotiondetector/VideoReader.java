@@ -36,7 +36,7 @@ public class VideoReader
 
             Canny(edges, edges, 0, 30);
 
-            faceRecognizer.detectAndWrite(frame, FacePartCascades.EYE.getCascadeClassifier(), "edges" + (index++) + ".png");
+            faceRecognizer.detectAndDraw(frame, FacePartCascade.EYE, "edges" + (index++) + ".png");
 
             frame = new Mat();
         }

@@ -2,7 +2,7 @@ package idc.cv.emotiondetector;
 
 import org.opencv.objdetect.CascadeClassifier;
 
-public enum FacePartCascades
+public enum FacePartCascade
 {
     EYE("/haarcascade_eye.xml"),
     MOUTH("/haarcascade_smile.xml"),
@@ -10,9 +10,9 @@ public enum FacePartCascades
 
     private final CascadeClassifier cascadeClassifier;
 
-    private FacePartCascades(String cascadePath)
+    private FacePartCascade(String cascadePath)
     {
-        this.cascadeClassifier = new CascadeClassifier(Utility.readResource(cascadePath));
+        this.cascadeClassifier = new CascadeClassifier(Utilities.readResource(cascadePath));
     }
 
     public CascadeClassifier getCascadeClassifier()

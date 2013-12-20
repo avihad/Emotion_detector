@@ -2,9 +2,7 @@ package idc.cv.emotiondetector;
 
 import java.io.UnsupportedEncodingException;
 
-import org.opencv.core.Mat;
-import org.opencv.core.MatOfRect;
-import org.opencv.core.Rect;
+import org.opencv.core.*;
 
 public enum MouthDetector
 {
@@ -21,28 +19,42 @@ public enum MouthDetector
     {
         Pair<Rect, Rect> detectedEyes = EyeDetector.instance.detectEyes(image);
 
-        MatOfRect suspectedMouths = FacePartDetector.instance.detect(image, FacePartCascades.MOUTH.getCascadeClassifier());
+        MatOfRect suspectedMouths = FacePartDetector.instance.detect(image, FacePartCascade.MOUTH);
 
-        int rightEyeLeftEdge = detectedEyes.fst.x;
-        int rightEyeRightEdge = detectedEyes.fst.x + detectedEyes.fst.width;
-
-        int leftEyeLeftEdge = detectedEyes.snd.x;
-        int leftEyeRightEdge = detectedEyes.snd.x + detectedEyes.snd.width;
+        int leftEyeLeftEdge = detectedEyes.first.x;
+        int rightEyeRightEdge = detectedEyes.second.x + detectedEyes.second.width;
 
         Rect mouthBestCandidate = null;
+        double threshold = Double.MAX_VALUE;
 
         for (Rect suspectedMouth : suspectedMouths.toArray())
         {
-            int suspectedLeftEdge = suspectedMouth.x;
-            int suspectedRightEdge = suspectedMouth.x + suspectedMouth.width;
-            // TODO: examine and refine this condition
-            if (suspectedLeftEdge < rightEyeLeftEdge && suspectedLeftEdge > leftEyeLeftEdge && suspectedRightEdge < rightEyeRightEdge
-                    && suspectedRightEdge > leftEyeRightEdge)
+            if (aboveTheEyes(detectedEyes, suspectedMouth)) continue;
+
+            int mouthLeftEdge = suspectedMouth.x;
+            int mouthRightEdge = suspectedMouth.x + suspectedMouth.width;
+            double averageVerticalLineOfEyes = (rightEyeRightEdge - leftEyeLeftEdge) / 2;
+            double averageVerticalLineOfMouth = (mouthRightEdge - mouthLeftEdge) / 2;
+
+            double differenceBetweenMouthAndEyes = Math.abs(averageVerticalLineOfEyes - averageVerticalLineOfMouth);
+
+            if (differenceBetweenMouthAndEyes < threshold)
             {
                 mouthBestCandidate = suspectedMouth;
+                threshold = differenceBetweenMouthAndEyes;
             }
-
         }
+
+        if (mouthBestCandidate == null)
+        {
+            throw new Exception("Mouth not found!");
+        }
+
         return mouthBestCandidate;
+    }
+
+    private boolean aboveTheEyes(Pair<Rect, Rect> detectedEyes, Rect suspectedMouth)
+    {
+        return suspectedMouth.y <= detectedEyes.first.y;
     }
 }

@@ -2,7 +2,6 @@ package idc.cv.emotiondetector;
 
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
-import org.opencv.core.MatOfRect;
 import org.opencv.core.Rect;
 
 public class Main
@@ -14,11 +13,15 @@ public class Main
         // Load the native library.
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-        Mat image = Utility.createImageMat("/images.jpg");
-        Pair<Rect, Rect> detectedEyes = EyeDetector.instance.detectEyes(image);
+        Mat image = Utilities.createImageMat("/edges5.png");
 
-        MatOfRect face = FacePartDetector.instance.detect(image, FacePartCascades.FACE.getCascadeClassifier());
-        FacePartDetector.instance.write(face, image, "faceRecognition.png");
-        System.out.println(face);
+        Pair<Rect, Rect> eyes = EyeDetector.instance.detectEyes(image);
+
+        Utilities.drawRect(eyes.first, image);
+        Utilities.drawRect(eyes.second, image);
+
+        Rect mouthRect = MouthDetector.instance.detectMouth(image);
+
+        Utilities.drawRectAndStore(mouthRect, image, "faceRecognition.png");
     }
 }
