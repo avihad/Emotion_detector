@@ -26,7 +26,7 @@ public enum MovieMouthTracker
 
         Integer index = 1;
         List<Rect> mouthsAlongMovie = new ArrayList<Rect>();
-        while (videoCapture.read(frame) && index < 20)
+        while (videoCapture.read(frame) && index < 40)
         {
             cvtColor(frame, edges, COLOR_RGB2GRAY);
 
@@ -42,6 +42,7 @@ public enum MovieMouthTracker
             }
 
             frame = new Mat();
+            index++;
         }
         return mouthsAlongMovie;
     }

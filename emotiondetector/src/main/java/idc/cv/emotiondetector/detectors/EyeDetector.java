@@ -31,7 +31,7 @@ public enum EyeDetector
                 int yPointDifference = Math.abs((second.y - first.y));
                 int widthDifference = Math.abs((second.width - first.width));
 
-                if (!first.equals(second) && (yPointDifference < minimalHeightDifference || widthDifference < minimalWidthDifference))
+                if (notOverlapping(first, second) && (yPointDifference < minimalHeightDifference || widthDifference < minimalWidthDifference))
                 {
                     bestChoice = Optional.of(Pair.of(first, second));
                     minimalHeightDifference = yPointDifference;
@@ -46,5 +46,11 @@ public enum EyeDetector
         }
 
         return bestChoice;
+    }
+
+    private boolean notOverlapping(Rect first, Rect second)
+    {
+        return (first.x+first.width < second.x || second.x+second.width < first.x) &&
+                (first.y+first.height < second.y || second.y+second.height < first.y);
     }
 }

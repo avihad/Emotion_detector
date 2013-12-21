@@ -23,8 +23,6 @@ public enum FacePartDetector
 
         facePartCascade.getCascadeClassifier().detectMultiScale(image, detectedParts);
 
-        System.out.println(String.format("Detected %s %sS", detectedParts.toArray().length, facePartCascade.name()));
-
         return detectedParts;
     }
 }
