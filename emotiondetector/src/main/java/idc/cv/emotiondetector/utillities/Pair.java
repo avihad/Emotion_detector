@@ -1,4 +1,4 @@
-package idc.cv.emotiondetector;
+package idc.cv.emotiondetector.utillities;
 
 public class Pair<A, B>
 {

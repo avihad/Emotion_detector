@@ -1,15 +1,10 @@
-package idc.cv.emotiondetector;
+package idc.cv.emotiondetector.detectors;
 
 import java.io.UnsupportedEncodingException;
 
-import org.opencv.core.Core;
+import idc.cv.emotiondetector.utillities.Utilities;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
-import org.opencv.core.Point;
-import org.opencv.core.Rect;
-import org.opencv.core.Scalar;
-import org.opencv.highgui.Highgui;
-import org.opencv.objdetect.CascadeClassifier;
 
 public enum FacePartDetector
 {

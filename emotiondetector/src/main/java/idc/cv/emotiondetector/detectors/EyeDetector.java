@@ -1,9 +1,10 @@
-package idc.cv.emotiondetector;
+package idc.cv.emotiondetector.detectors;
 
+import idc.cv.emotiondetector.utillities.Optional;
+import idc.cv.emotiondetector.utillities.Pair;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Rect;
-import org.opencv.core.Size;
 
 public enum EyeDetector
 {
@@ -14,14 +15,14 @@ public enum EyeDetector
      * Result contains  at first - the left eye
      *                 the second - the right eye
      * */
-    public Pair<Rect, Rect> detectEyes(Mat image) throws Exception
+    public Optional<Pair<Rect, Rect>> detectEyes(Mat image) throws Exception
     {
         MatOfRect eyes = FacePartDetector.instance.detect(image, FacePartCascade.EYE);
 
         double minimalHeightDifference = Double.MAX_VALUE;
         double minimalWidthDifference = Double.MAX_VALUE;
 
-        Pair<Rect, Rect> bestChoice = null;
+        Optional<Pair<Rect, Rect>> bestChoice = Optional.absent();
 
         for (Rect first : eyes.toArray())
         {
@@ -32,16 +33,16 @@ public enum EyeDetector
 
                 if (!first.equals(second) && (yPointDifference < minimalHeightDifference || widthDifference < minimalWidthDifference))
                 {
-                    bestChoice = Pair.of(first, second);
+                    bestChoice = Optional.of(Pair.of(first, second));
                     minimalHeightDifference = yPointDifference;
                     minimalWidthDifference = widthDifference;
                 }
             }
         }
 
-        if (bestChoice.first.x > bestChoice.second.x)
+        if (bestChoice.isPresent() && bestChoice.get().first.x > bestChoice.get().second.x)
         {
-            return Pair.of(bestChoice.second, bestChoice.first);
+            return Optional.of(Pair.of(bestChoice.get().second, bestChoice.get().first));
         }
 
         return bestChoice;
