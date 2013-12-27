@@ -1,7 +1,5 @@
 package idc.cv.emotiondetector.utillities;
 
-import idc.cv.emotiondetector.detectors.EyesPairDetector;
-import idc.cv.emotiondetector.detectors.MouthDetector;
 import org.opencv.core.Mat;
 import org.opencv.core.Rect;
 import org.opencv.highgui.VideoCapture;
