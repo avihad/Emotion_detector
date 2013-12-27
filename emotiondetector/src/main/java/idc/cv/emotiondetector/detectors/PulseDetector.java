@@ -29,7 +29,7 @@ public enum PulseDetector
 		Map<Integer, double[]> frameSamples = new HashMap<Integer, double[]>();
 		VideoCapture videoAfterMagnifying = VideoReader.instance.open(magnifyMovieFileName);
 
-		Map<Integer, Rect> mouthPositionsAlongMovie = MovieMouthTracker.getMouthPositionsAlongMovieWithIndexs(movieFileName);
+		Map<Integer, Rect> mouthPositionsAlongMovie = MovieMouthTracker.getMouthPositionsAlongMovieWithIndices(movieFileName);
 		Mat frame = new Mat();
 		Integer index = 1;
 

@@ -20,7 +20,7 @@ public class Main
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
         Optional<Rect> neutralMouth = MouthDetector.instance.detectMouth(Utilities.readImage("/neutral.png"));
-        Optional<Rect> smilingMouth = MouthDetector.instance.detectMouth(Utilities.readImage("/smile.png"));
+       Optional<Rect> smilingMouth = MouthDetector.instance.detectMouth(Utilities.readImage("/smile.png"));
 
         throwIfMouthIsNotFoundIn(neutralMouth, smilingMouth);
 
@@ -31,7 +31,7 @@ public class Main
         double smilingFaceDeriv = interpolationOf(smilingMouth.get());
 
         int frameNum = 1;
-        for (Rect mouth : MovieMouthTracker.getMouthPositionsAlongMovie("/aviad.avi"))
+        for (Rect mouth : MovieMouthTracker.getMouthPositionsAlongMovieWithIndices("/aviad.avi").values())
         {
             double mouthDeriv = interpolationOf(mouth);
 
@@ -42,8 +42,6 @@ public class Main
 
             frameNum++;
         }
-
-        //VideoReader.instance.storeAsFrames("/aviad.avi");
     }
 
     private static double interpolationOf(Rect mouth)
