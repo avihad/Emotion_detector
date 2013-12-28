@@ -32,10 +32,15 @@ public class ParabolicLinearRegression
     */
     public static double[] linearRegressionOf(Collection<Point> points)
     {
+        return linearRegressionOf((Point[]) points.toArray());
+    }
+
+    public static double[] linearRegressionOf(Point... points)
+    {
         OLSMultipleLinearRegression regression = new OLSMultipleLinearRegression();
 
-        double[] y = new double[points.size() + 1];
-        double[][] x = new double[points.size() + 1][];
+        double[] y = new double[points.length + 1];
+        double[][] x = new double[points.length + 1][];
         x[0] = new double[]{0, 0, 0};
 
         int pointNumber = 1;

@@ -60,7 +60,7 @@ public class Utilities
 
     public static void drawPoint(Point point, Mat image)
     {
-        drawLine(point, new Point(point.x, point.y+1), image);
+        Core.line(image, point, new Point(point.x, point.y + 1), new Scalar(0, 255, 0), 5);
     }
 
     public static void drawLine(Point first, Point second, Mat image)
@@ -72,5 +72,21 @@ public class Utilities
     {
         System.out.println(String.format("Writing %s", fileName));
         Highgui.imwrite(fileName, image);
+    }
+
+    public static void drawConnectingLineBetween(Mat image, Point... points)
+    {
+        for (Point point : points)
+        {
+            Utilities.drawPoint(point, image);
+        }
+
+        int i = 0;
+        int j = 1;
+        while(j < points.length)
+        {
+            Utilities.drawLine(points[i++], points[j++], image);
+        }
+
     }
 }
