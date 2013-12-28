@@ -14,14 +14,12 @@ public class PulseDetectorMain
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
 		try {
-
-			Map<Integer, double[][]> pulseSamples = PulseDetector.detectPulse("avihad.mp4");
-			System.out.println(pulseSamples);
+			Map<Integer, double[][]> pulseSamples = PulseDetector.detectPulse("/avihad2.mp4");
+			PulseDetector.printSamples(pulseSamples);
 
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 	}
-
 }

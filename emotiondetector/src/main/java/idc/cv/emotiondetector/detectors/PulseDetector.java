@@ -28,8 +28,6 @@ public enum PulseDetector
 		String magnifyMovieFileName = executeVideoMagnifyer(movieFileName);
 		System.out.println("Finish video magnifier run");
 
-		VideoReader.instance.open(movieFileName);
-
 		Map<Integer, double[][]> frameSamples = new HashMap<Integer, double[][]>();
 
 		VideoCapture videoAfterMagnifying = VideoReader.instance.open(magnifyMovieFileName);
@@ -42,7 +40,12 @@ public enum PulseDetector
 
 		while (videoAfterMagnifying.read(frame)) {
 			Rect r = mouthPositionsAlongMovie.get(index);
-			frameSamples.put(index, sampleFrame(frame, r));
+			if (r != null) {
+				frameSamples.put(index, sampleFrame(frame, r));
+			}
+
+			frame = new Mat();
+			index++;
 		}
 		System.out.println("Finish extracting pulse run");
 		return frameSamples;
@@ -76,27 +79,49 @@ public enum PulseDetector
 
 	}
 
+	public static void printSamples(Map<Integer, double[][]> pulseSamples) {
+
+		for (Map.Entry<Integer, double[][]> entry : pulseSamples.entrySet()) {
+			System.out.println();
+			System.out.println("Frame #: " + entry.getKey());
+
+			double[][] samples = entry.getValue();
+			for (int i = 0; i < samples.length; i++) {
+				System.out.print("Sample #: " + i + " Value: ");
+				System.out.println(entry.getValue()[i]);
+			}
+
+		}
+	}
+
 	private static String executeVideoMagnifyer(String movieFileName) throws IOException, InterruptedException {
 
-		String relativePath = ".\\target\\classes\\";
-		String commandAndArgs = new String("cmd /c start " + relativePath + "VideoMagnification\\videoMagnifier.bat " + relativePath + movieFileName);
-
-		// Executing VideoMagnification , after the execution finish it create
-		// anew file called finishMagnifierExe
-		Runtime.getRuntime().exec(commandAndArgs);
-
-		File f = new File("finishMagnifierExe");
-
-		while (!f.exists()) {
-			Thread.sleep(3000);
-		}
-
-		f.delete();
-
 		StringBuilder sb = new StringBuilder();
-		sb.append("/");
 		sb.append(movieFileName.substring(0, movieFileName.length() - 4));
 		sb.append("-ideal-from-0.83333-to-1-alpha-50-level-6-chromAtn-1.avi");
-		return sb.toString();
+		String outputFileName = sb.toString();
+		File outputFile = new File(outputFileName);
+
+		if (!outputFile.exists()) {
+
+			String relativePath = ".\\target\\classes\\";
+			String commandAndArgs = new String("cmd /c start " + relativePath + "VideoMagnification\\videoMagnifier.bat " + relativePath
+					+ movieFileName);
+
+			// Executing VideoMagnification , after the execution finish it
+			// create
+			// anew file called finishMagnifierExe
+			Runtime.getRuntime().exec(commandAndArgs);
+
+			File f = new File("finishMagnifierExe");
+
+			while (!f.exists()) {
+				Thread.sleep(3000);
+			}
+
+			f.delete();
+		}
+
+		return outputFileName;
 	}
 }

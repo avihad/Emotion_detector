@@ -28,3 +28,5 @@ set inFile=%1
 %f% %inFile% %RDIR% 25 color 50/60 60/60 50 ideal 1 6
 
 type NUL > finishMagnifierExe
+
+exit
