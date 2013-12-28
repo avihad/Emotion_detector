@@ -2,7 +2,7 @@
 @echo off
 
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-set f=evm
+set f=.\\target\\classes\\VideoMagnification\\evm
 
 :: S=Source, R=Results, MCR=MatlabCompilerRuntime
 
@@ -15,7 +15,7 @@ set PATH=%MCR%;%PATH%
 
 set verNum=v80
 :: set RDIR=Results
-set RDIR=./
+set RDIR=.\target\classes\
 
 :: mkdir %RDIR%
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -26,3 +26,5 @@ set RDIR=./
 set inFile=%1
 
 %f% %inFile% %RDIR% 25 color 50/60 60/60 50 ideal 1 6
+
+type NUL > finishMagnifierExe
