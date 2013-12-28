@@ -3,6 +3,7 @@ package idc.cv.emotiondetector.detectors;
 import java.io.UnsupportedEncodingException;
 
 import idc.cv.emotiondetector.utillities.Optional;
+import idc.cv.emotiondetector.utillities.Pair;
 import org.opencv.core.*;
 
 public enum MouthDetector
@@ -18,44 +19,35 @@ public enum MouthDetector
      */
     public Optional<Rect> detectMouth(Mat image) throws Exception
     {
-        Optional<Rect> optionalEyesPair = EyesPairDetector.instance.detectEyePair(image);
-
-        if (!optionalEyesPair.isPresent())
-        {
-            return Optional.absent();
-        }
+        Point eyesBottomMiddlePoint = BottomMiddleEyesDetector.instance.getPointOfBottomMiddleEyes(image);
 
         MatOfRect suspectedMouths = FacePartDetector.instance.detect(image, FacePartCascade.MOUTH);
-
-        int leftEyeLeftEdge = optionalEyesPair.get().x;
-        int rightEyeRightEdge = optionalEyesPair.get().x + optionalEyesPair.get().width;
 
         Optional<Rect> mouthBestCandidate = Optional.absent();
         double threshold = Double.MAX_VALUE;
 
         for (Rect suspectedMouth : suspectedMouths.toArray())
         {
-            if (notBeneathTheEyes(optionalEyesPair.get(), suspectedMouth)) continue;
-
-            int mouthLeftEdge = suspectedMouth.x;
-            int mouthRightEdge = suspectedMouth.x + suspectedMouth.width;
-            double averageVerticalLineOfEyes = (rightEyeRightEdge - leftEyeLeftEdge) / 2;
-            double averageVerticalLineOfMouth = (mouthRightEdge - mouthLeftEdge) / 2;
-
-            double differenceBetweenMouthAndEyes = Math.abs(averageVerticalLineOfEyes - averageVerticalLineOfMouth);
-
-            if (mouthIsReasonablyFarFromEyes(optionalEyesPair, suspectedMouth) && differenceBetweenMouthAndEyes < threshold)
+            if (isMouthReasonablyBelowTheEyes(eyesBottomMiddlePoint.y, suspectedMouth))
             {
-                mouthBestCandidate = Optional.of(suspectedMouth);
-                threshold = differenceBetweenMouthAndEyes;
+                int mouthLeftEdge = suspectedMouth.x;
+                int mouthRightEdge = suspectedMouth.x + suspectedMouth.width;
+                double averageVerticalLineOfMouth = (mouthRightEdge - mouthLeftEdge) / 2;
+
+                double differenceBetweenMouthAndEyes = Math.abs(eyesBottomMiddlePoint.x - averageVerticalLineOfMouth);
+
+                if (differenceBetweenMouthAndEyes < threshold)
+                {
+                    mouthBestCandidate = Optional.of(suspectedMouth);
+                    threshold = differenceBetweenMouthAndEyes;
+                }
             }
         }
 
         if (mouthBestCandidate.isPresent())
         {
             System.out.println("Mouth is detected at: " + mouthBestCandidate.get());
-        }
-        else
+        } else
         {
             System.out.println("Mouth not found at: " + image);
         }
@@ -63,16 +55,10 @@ public enum MouthDetector
         return mouthBestCandidate;
     }
 
-    private boolean mouthIsReasonablyFarFromEyes(Optional<Rect> optionalEyesPair, Rect suspectedMouth)
-    {
-        Rect eyes = optionalEyesPair.get();
-        int eyesBottomEdge = eyes.y + eyes.height;
 
-        return suspectedMouth.y - eyesBottomEdge > 50;
-    }
 
-    private boolean notBeneathTheEyes(Rect detectedEyes, Rect suspectedMouth)
+    private boolean isMouthReasonablyBelowTheEyes(double eyesBottomYCoordinate, Rect suspectedMouth)
     {
-        return !(suspectedMouth.y > detectedEyes.y+detectedEyes.height);
+        return suspectedMouth.y > eyesBottomYCoordinate + 50;
     }
 }

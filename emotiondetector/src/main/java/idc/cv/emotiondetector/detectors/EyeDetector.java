@@ -6,7 +6,6 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Rect;
 
-@Deprecated
 public enum EyeDetector
 {
     instance;
@@ -20,8 +19,7 @@ public enum EyeDetector
     {
         MatOfRect eyes = FacePartDetector.instance.detect(image, FacePartCascade.EYE);
 
-        double minimalHeightDifference = Double.MAX_VALUE;
-        double minimalWidthDifference = Double.MAX_VALUE;
+        double minimalAreasDifference = Double.MAX_VALUE;
 
         Optional<Pair<Rect, Rect>> bestChoice = Optional.absent();
 
@@ -29,14 +27,12 @@ public enum EyeDetector
         {
             for (Rect second : eyes.toArray())
             {
-                int yPointDifference = Math.abs((second.y - first.y));
-                int widthDifference = Math.abs((second.width - first.width));
+                double areasDifference = Math.abs((second.area() - first.area()));
 
-                if (notOverlapping(first, second) && (yPointDifference < minimalHeightDifference || widthDifference < minimalWidthDifference))
+                if (positionsAreValid(first, second, image) && (areasDifference < minimalAreasDifference))
                 {
                     bestChoice = Optional.of(Pair.of(first, second));
-                    minimalHeightDifference = yPointDifference;
-                    minimalWidthDifference = widthDifference;
+                    minimalAreasDifference = areasDifference;
                 }
             }
         }
@@ -49,9 +45,20 @@ public enum EyeDetector
         return bestChoice;
     }
 
-    private boolean notOverlapping(Rect first, Rect second)
+    private boolean positionsAreValid(Rect first, Rect second, Mat image)
     {
-        return (first.x+first.width < second.x || second.x+second.width < first.x) &&
-                (first.y+first.height < second.y || second.y+second.height < first.y);
+        return notOverlappingAtX(first, second) &&
+                almostAtTheSameHeight(first, second) &&
+                first.y < image.size().height/2;
+    }
+
+    private boolean notOverlappingAtX(Rect first, Rect second)
+    {
+        return (first.x+first.width < second.x || second.x+second.width < first.x);
+    }
+
+    private boolean almostAtTheSameHeight(Rect first, Rect second)
+    {
+        return (Math.abs(first.y-second.y) < 10);
     }
 }
