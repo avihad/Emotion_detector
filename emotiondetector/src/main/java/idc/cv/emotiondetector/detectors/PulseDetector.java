@@ -58,22 +58,22 @@ public enum PulseDetector
 		// Mouth frame sample
 		int yIndex = r.height / 2 + r.y;
 		int xIndex = r.width / 2 + r.x;
-		samples[0] = frame.get(xIndex, yIndex);
+		samples[0] = frame.get(yIndex, xIndex);
 
 		// Nose frame sample
 		yIndex = (int) (r.y + r.height * 1.5);
 		xIndex = r.width / 2 + r.x;
-		samples[1] = frame.get(xIndex, yIndex);
+		samples[1] = frame.get(yIndex, xIndex);
 
 		// Left chick frame sample
 		yIndex = (int) (r.y + r.height * 1.5);
 		xIndex = (int) (r.x + r.width * 0.1);
-		samples[2] = frame.get(xIndex, yIndex);
+		samples[2] = frame.get(yIndex, xIndex);
 
 		// Right chick frame sample
 		yIndex = (int) (r.y + r.height * 1.5);
 		xIndex = (int) (r.x + r.width * 0.9);
-		samples[3] = frame.get(xIndex, yIndex);
+		samples[3] = frame.get(yIndex, xIndex);
 
 		return samples;
 

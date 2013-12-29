@@ -30,9 +30,7 @@ public enum MouthDetector
         {
             if (isMouthReasonablyBelowTheEyes(eyesBottomMiddlePoint.y, suspectedMouth))
             {
-                int mouthLeftEdge = suspectedMouth.x;
-                int mouthRightEdge = suspectedMouth.x + suspectedMouth.width;
-                double averageVerticalLineOfMouth = (mouthRightEdge - mouthLeftEdge) / 2;
+                double averageVerticalLineOfMouth = suspectedMouth.x + suspectedMouth.width / 2;
 
                 double differenceBetweenMouthAndEyes = Math.abs(eyesBottomMiddlePoint.x - averageVerticalLineOfMouth);
 

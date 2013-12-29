@@ -16,10 +16,7 @@ public enum BottomMiddleEyesDetector
 
         if (optionalEyesPair.isPresent())
         {
-            int leftEyeLeftEdge = optionalEyesPair.get().x;
-            int rightEyeRightEdge = optionalEyesPair.get().x + optionalEyesPair.get().width;
-
-            return new Point((rightEyeRightEdge - leftEyeLeftEdge) / 2, optionalEyesPair.get().y + optionalEyesPair.get().height);
+           return new Point((optionalEyesPair.get().x + optionalEyesPair.get().width/2), optionalEyesPair.get().y + optionalEyesPair.get().height);
         }
 
         Optional<Pair<Rect, Rect>> eyesSeparately = EyeDetector.instance.detectEyes(image);
