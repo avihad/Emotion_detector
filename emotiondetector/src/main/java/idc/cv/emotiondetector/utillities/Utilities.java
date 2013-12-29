@@ -1,10 +1,10 @@
 package idc.cv.emotiondetector.utillities;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
-
 import org.opencv.core.*;
 import org.opencv.highgui.Highgui;
+
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 
 public class Utilities
 {
@@ -87,6 +87,5 @@ public class Utilities
         {
             Utilities.drawLine(points[i++], points[j++], image);
         }
-
     }
 }

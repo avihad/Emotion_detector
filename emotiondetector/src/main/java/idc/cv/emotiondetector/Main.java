@@ -1,20 +1,17 @@
 package idc.cv.emotiondetector;
 
-import static org.opencv.imgproc.Imgproc.COLOR_RGB2GRAY;
-import static org.opencv.imgproc.Imgproc.cvtColor;
-import idc.cv.emotiondetector.detectors.MouthDetector;
+import idc.cv.emotiondetector.detectors.MouthDetectorImproved;
 import idc.cv.emotiondetector.utillities.Optional;
 import idc.cv.emotiondetector.utillities.ParabolicLinearRegression;
 import idc.cv.emotiondetector.utillities.Utilities;
-
-import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
-import java.util.Arrays;
-
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
+
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Main
 {
@@ -22,14 +19,14 @@ public class Main
 		// Load the native library.
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-		Mat smileImage = Utilities.readImage("/aviadSmile.png");
+		Mat smileImage = Utilities.readImage("/photo1.jpg");
 
-		Optional<Rect> smilingMouth = MouthDetector.instance.detectMouth(smileImage);
+		Optional<Rect> smilingMouth = MouthDetectorImproved.instance.detectMouth(smileImage);
 
-		throwIfMouthIsNotFoundIn(smilingMouth);
+        Utilities.drawRectAndStore(smilingMouth.get(), smileImage, "detectedSmile.png");
+/*        throwIfMouthIsNotFoundIn(smilingMouth);
 
 		Rect mouthRect = smilingMouth.get();
-		Utilities.drawRect(mouthRect, smileImage);
 
 		cvtColor(smileImage, smileImage, COLOR_RGB2GRAY);
 
@@ -52,7 +49,7 @@ public class Main
 		double derive = 2 * parabolaCoefficients[1];
 		System.out.println("Derive is: " + derive);
 
-		Utilities.writeImageToFile("gray.png", smileImage);
+		Utilities.writeImageToFile("gray.png", smileImage);*/
 	}
 
 	private static Point findLowerLipPoint(Mat image, Point startPoint, int offset, int yRange) {
