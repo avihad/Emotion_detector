@@ -13,6 +13,9 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
 
+import static org.opencv.imgproc.Imgproc.COLOR_RGB2GRAY;
+import static org.opencv.imgproc.Imgproc.cvtColor;
+
 public class Main
 {
 	public static void main(String[] args) throws Exception {
@@ -24,7 +27,7 @@ public class Main
 		Optional<Rect> smilingMouth = MouthDetectorImproved.instance.detectMouth(smileImage);
 
         Utilities.drawRectAndStore(smilingMouth.get(), smileImage, "detectedSmile.png");
-/*        throwIfMouthIsNotFoundIn(smilingMouth);
+        throwIfMouthIsNotFoundIn(smilingMouth);
 
 		Rect mouthRect = smilingMouth.get();
 
@@ -34,22 +37,29 @@ public class Main
 
 		// Canny(smileImage, smileImage, 10, 20);
 
+		Point left2LipCorner = findLowerLipPoint(smileImage, new Point(mouthRect.x + mouthRect.width / 5, mouthRect.y + mouthRect.height), 0, 30);
 		Point middleLipCorner = findLowerLipPoint(smileImage, new Point(mouthRect.x + mouthRect.width / 2, mouthRect.y + mouthRect.height), 65, 65);
 		Point leftLipCorner = findLowerLipPoint(smileImage, new Point(mouthRect.x + mouthRect.width / 3, mouthRect.y + mouthRect.height), 30, 40);
-		Point rightLipCorner = findLowerLipPoint(smileImage, new Point(mouthRect.x + 2 * (mouthRect.width / 3), mouthRect.y + mouthRect.height), 30,
-				40);
-		Point right2LipCorner = findLowerLipPoint(smileImage, new Point(mouthRect.x + mouthRect.width - 10, mouthRect.y + mouthRect.height), -100, 30);
+		Point rightLipCorner = findLowerLipPoint(smileImage, new Point(mouthRect.x + 2 * (mouthRect.width / 3), mouthRect.y + mouthRect.height), 30,40);
+		Point rightLip1Corner = findLowerLipPoint(smileImage, new Point(mouthRect.x + 2 * (mouthRect.width / 3) + 30, mouthRect.y + mouthRect.height), 30,40);
+		Point right2LipCorner = findLowerLipPoint(smileImage, new Point(mouthRect.x + mouthRect.width - 10, mouthRect.y + mouthRect.height), 10, 70);
 
-		Utilities.drawConnectingLineBetween(smileImage, leftLipCorner, middleLipCorner, rightLipCorner, right2LipCorner);
+		Utilities.drawConnectingLineBetween(smileImage, left2LipCorner, leftLipCorner, middleLipCorner, rightLipCorner, rightLip1Corner, right2LipCorner);
 
-		double[] parabolaCoefficients = ParabolicLinearRegression.linearRegressionOf(normalizeByBase(leftLipCorner, middleLipCorner),
-				normalizeByBase(middleLipCorner, middleLipCorner), normalizeByBase(rightLipCorner, middleLipCorner),
-				normalizeByBase(right2LipCorner, middleLipCorner));
+		double[] parabolaCoefficients = ParabolicLinearRegression.linearRegressionOf
+                (
+                        normalizeByBase(left2LipCorner, middleLipCorner),
+                        normalizeByBase(leftLipCorner, middleLipCorner),
+				        normalizeByBase(middleLipCorner, middleLipCorner),
+                        normalizeByBase(rightLipCorner, middleLipCorner),
+                        normalizeByBase(rightLip1Corner, middleLipCorner),
+                        normalizeByBase(right2LipCorner, middleLipCorner)
+                );
 
 		double derive = 2 * parabolaCoefficients[1];
 		System.out.println("Derive is: " + derive);
 
-		Utilities.writeImageToFile("gray.png", smileImage);*/
+		Utilities.writeImageToFile("gray.png", smileImage);
 	}
 
 	private static Point findLowerLipPoint(Mat image, Point startPoint, int offset, int yRange) {
