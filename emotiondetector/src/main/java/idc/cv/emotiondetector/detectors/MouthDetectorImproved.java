@@ -1,6 +1,7 @@
 package idc.cv.emotiondetector.detectors;
 
 import idc.cv.emotiondetector.utillities.Optional;
+import idc.cv.emotiondetector.utillities.Utilities;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Rect;
@@ -31,7 +32,7 @@ public enum MouthDetectorImproved
 
         for (Rect suspectedMouth : mouths.toArray())
         {
-            if (suspectedMouth.width > maxWidth)
+            if (Math.abs(suspectedMouth.x + (suspectedMouth.width/2) - (bottomFaceOnly.size().width/2)) < 50 && suspectedMouth.width > maxWidth)
             {
                 maxWidth = suspectedMouth.width;
                 bestChoice = Optional.of(suspectedMouth);
@@ -44,6 +45,7 @@ public enum MouthDetectorImproved
             bestChoice = Optional.of(new Rect(bottomFace.x + mouth.x, bottomFace.y + mouth.y, mouth.width, mouth.height));
         }
 
+        Utilities.drawRectAndStore(bestChoice.get(), image, "mouths.png");
         return bestChoice;
     }
 }
