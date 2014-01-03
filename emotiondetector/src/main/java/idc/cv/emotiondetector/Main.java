@@ -9,134 +9,114 @@ import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 
 import static org.opencv.imgproc.Imgproc.COLOR_RGB2GRAY;
 import static org.opencv.imgproc.Imgproc.cvtColor;
 
 public class Main
 {
-	public static void main(String[] args) throws Exception {
-		// Load the native library.
-		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+    public static void main(String[] args) throws Exception
+    {
+        // Load the native library.
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-		Mat smileImage = Utilities.readImage("/photo1.jpg");
+        Mat smileImage = Utilities.readImage("/womanSmiles.png");
 
-		Optional<Rect> smilingMouth = MouthDetectorImproved.instance.detectMouth(smileImage);
+        Optional<Rect> smilingMouth = MouthDetectorImproved.instance.detectMouth(smileImage);
 
-        Utilities.drawRectAndStore(smilingMouth.get(), smileImage, "detectedSmile.png");
-        throwIfMouthIsNotFoundIn(smilingMouth);
+        Rect mouthRect = smilingMouth.get();
 
-		Rect mouthRect = smilingMouth.get();
+        cvtColor(smileImage, smileImage, COLOR_RGB2GRAY);
 
-		cvtColor(smileImage, smileImage, COLOR_RGB2GRAY);
+        Collection<Point> lowerLipPoints = findPointsAlongBottomLipEdge(smileImage, mouthRect);
 
-		// GaussianBlur(smileImage, smileImage, new Size(7, 7), 1.5, 1.5);
+        double[] parabolaCoefficients = ParabolicLinearRegression.linearRegressionOf(lowerLipPoints);
 
-		// Canny(smileImage, smileImage, 10, 20);
+        System.out.println("Coefficient of x^2 is: " + parabolaCoefficients[1]);
 
-		Point left2LipCorner = findLowerLipPoint(smileImage, new Point(mouthRect.x + mouthRect.width / 5, mouthRect.y + mouthRect.height), 0, 30);
-		Point middleLipCorner = findLowerLipPoint(smileImage, new Point(mouthRect.x + mouthRect.width / 2, mouthRect.y + mouthRect.height), 65, 65);
-		Point leftLipCorner = findLowerLipPoint(smileImage, new Point(mouthRect.x + mouthRect.width / 3, mouthRect.y + mouthRect.height), 30, 40);
-		Point rightLipCorner = findLowerLipPoint(smileImage, new Point(mouthRect.x + 2 * (mouthRect.width / 3), mouthRect.y + mouthRect.height), 30,40);
-		Point rightLip1Corner = findLowerLipPoint(smileImage, new Point(mouthRect.x + 2 * (mouthRect.width / 3) + 30, mouthRect.y + mouthRect.height), 30,40);
-		Point right2LipCorner = findLowerLipPoint(smileImage, new Point(mouthRect.x + mouthRect.width - 10, mouthRect.y + mouthRect.height), 10, 70);
+        Utilities.writeImageToFile("gray.png", smileImage);
+    }
 
-		Utilities.drawConnectingLineBetween(smileImage, left2LipCorner, leftLipCorner, middleLipCorner, rightLipCorner, rightLip1Corner, right2LipCorner);
+    private static Collection<Point> findPointsAlongBottomLipEdge(Mat smileImage, Rect mouthRect)
+    {
+        Point middleLipCorner = findLocalMinimum(smileImage, new Point(mouthRect.x + mouthRect.width / 2, mouthRect.y + mouthRect.height), 65, 65);
 
-		double[] parabolaCoefficients = ParabolicLinearRegression.linearRegressionOf
-                (
-                        normalizeByBase(left2LipCorner, middleLipCorner),
-                        normalizeByBase(leftLipCorner, middleLipCorner),
-				        normalizeByBase(middleLipCorner, middleLipCorner),
-                        normalizeByBase(rightLipCorner, middleLipCorner),
-                        normalizeByBase(rightLip1Corner, middleLipCorner),
-                        normalizeByBase(right2LipCorner, middleLipCorner)
-                );
+        //left points from middle:
+        List<Point> lowerLipPoints = findLowerLipLeftPoints(middleLipCorner, mouthRect, smileImage);
+        //middle point
+        lowerLipPoints.add(middleLipCorner);
+        //right points from middle
+        lowerLipPoints.addAll(findLowerLipRightPoints(middleLipCorner, mouthRect, smileImage));
 
-		double derive = 2 * parabolaCoefficients[1];
-		System.out.println("Derive is: " + derive);
+        Utilities.drawCollectionLineOf(smileImage, lowerLipPoints);
 
-		Utilities.writeImageToFile("gray.png", smileImage);
-	}
+        return normalizeCollectionByBase(lowerLipPoints, middleLipCorner);
+    }
 
-	private static Point findLowerLipPoint(Mat image, Point startPoint, int offset, int yRange) {
-		double minimumValue = 255;
-		Point minimum = startPoint;
+    private static List<Point> findLowerLipLeftPoints(Point bottomMiddle, Rect mouth, Mat image)
+    {
+        List<Point> lowerLipPoints = new ArrayList<Point>();
 
-		for (int yAxisAdder = 0; yAxisAdder < yRange; yAxisAdder++) {
-			if (image.get((int) startPoint.y + offset - yAxisAdder, (int) startPoint.x)[0] < minimumValue) {
-				minimum = new Point(startPoint.x, startPoint.y + offset - yAxisAdder);
-				minimumValue = image.get((int) minimum.y, (int) minimum.x)[0];
-			}
+        int heightLookupRange = 0;
+        for (double xIndex = bottomMiddle.x - 10; xIndex > mouth.x; xIndex -= 10)
+        {
+            lowerLipPoints.add(findLocalMinimum(image, new Point(xIndex, bottomMiddle.y), 0, heightLookupRange));
+            heightLookupRange += 7;
+        }
 
-			System.out.println(Arrays.toString(image.get((int) minimum.y, (int) minimum.x)));
-		}
-		return minimum;
-	}
+        return lowerLipPoints;
+    }
 
-	private static Point normalizeByBase(Point point, Point base) {
-		return new Point(point.x - base.x, base.y - point.y);
-	}
+    private static List<Point> findLowerLipRightPoints(Point bottomMiddle, Rect mouth, Mat image)
+    {
+        List<Point> lowerLipPoints = new ArrayList<Point>();
 
-	private static void throwIfMouthIsNotFoundIn(Optional<Rect> smilingMouth) throws Exception {
-		if (!smilingMouth.isPresent()) {
-			throw new Exception("Couldn't find smiling mouth");
-		}
-	}
+        int heightLookupRange = 0;
+        for (double xIndex = bottomMiddle.x + 10; xIndex <= mouth.x + mouth.width; xIndex += 10)
+        {
+            lowerLipPoints.add(findLocalMinimum(image, new Point(xIndex, bottomMiddle.y), 0, heightLookupRange));
+            heightLookupRange += 7;
+        }
 
-	private static void anExampleWithPreGivenPoints() throws UnsupportedEncodingException {
-		Mat smileImage = Utilities.readImage("/smile.png");
-		// smiling :
-		ArrayList<Point> points = new ArrayList<Point>();
-		Point base = new Point(673, 658);
-		Point point1 = new Point(505, 519);
-		points.add(normalizeByBase(point1, base));
-		Point point2 = new Point(557, 612);
-		points.add(normalizeByBase(point2, base));
-		Point point3 = new Point(609, 654);
-		points.add(normalizeByBase(point3, base));
-		Point point4 = new Point(673, 658);
-		points.add(normalizeByBase(point4, base));// base
-		Point point5 = new Point(727, 643);
-		points.add(normalizeByBase(point5, base));
-		Point point6 = new Point(824, 524);
-		points.add(normalizeByBase(point6, base));
-		double smileDeriv = 2 * ParabolicLinearRegression.linearRegressionOf(points)[1];
+        return lowerLipPoints;
+    }
 
-		Utilities.drawLine(point1, point2, smileImage);
-		Utilities.drawLine(point2, point3, smileImage);
-		Utilities.drawLine(point3, point4, smileImage);
-		Utilities.drawLine(point4, point5, smileImage);
-		Utilities.drawLine(point5, point6, smileImage);
-		Utilities.writeImageToFile("smileNew.png", smileImage);
+    private static Point findLocalMinimum(Mat image, Point startPoint, int offset, int numOfPixelsToGoUp)
+    {
+        double minimumValue = 255;
+        Point minimum = startPoint;
 
-		// neutral:
-		Mat neutralImage = Utilities.readImage("/neutral.png");
-		points = new ArrayList<Point>();
-		Point base2 = new Point(663, 626);
-		Point pointN1 = new Point(540, 581);
-		points.add(normalizeByBase(pointN1, base2));
-		Point pointN2 = new Point(619, 626);
-		points.add(normalizeByBase(pointN2, base2));
-		Point pointN3 = new Point(663, 626); // base
-		points.add(normalizeByBase(pointN3, base2));
-		Point pointN4 = new Point(733, 612);
-		points.add(normalizeByBase(pointN4, base2));
-		Point pointN5 = new Point(753, 607);
-		points.add(normalizeByBase(pointN5, base2));
-		Point pointN6 = new Point(793, 569);
-		points.add(normalizeByBase(pointN6, base2));
-		double neutralDeriv = 2 * ParabolicLinearRegression.linearRegressionOf(points)[1];
+        for (int yAxisAdder = 0; yAxisAdder < numOfPixelsToGoUp; yAxisAdder++)
+        {
+            if (image.get((int) startPoint.y + offset - yAxisAdder, (int) startPoint.x)[0] < minimumValue)
+            {
+                minimum = new Point(startPoint.x, startPoint.y + offset - yAxisAdder);
+                minimumValue = image.get((int) minimum.y, (int) minimum.x)[0];
+            }
 
-		System.out.println("Deriv smile: " + smileDeriv + " neutral deriv: " + neutralDeriv + " ratio: " + smileDeriv / neutralDeriv);
-		Utilities.drawLine(pointN1, pointN2, neutralImage);
-		Utilities.drawLine(pointN2, pointN3, neutralImage);
-		Utilities.drawLine(pointN3, pointN4, neutralImage);
-		Utilities.drawLine(pointN4, pointN5, neutralImage);
-		Utilities.drawLine(pointN5, pointN6, neutralImage);
-		Utilities.writeImageToFile("neutralNew.png", neutralImage);
-	}
+            System.out.println(Arrays.toString(image.get((int) minimum.y, (int) minimum.x)));
+        }
+        return minimum;
+    }
+
+    private static Point normalizeByBase(Point point, Point base)
+    {
+        return new Point(point.x - base.x, base.y - point.y);
+    }
+
+    private static Collection<Point> normalizeCollectionByBase(Collection<Point> points, Point base)
+    {
+        List<Point> normalizedPoints = new ArrayList<Point>();
+
+        for (Point point : points)
+        {
+            normalizedPoints.add(normalizeByBase(point, base));
+        }
+
+        return normalizedPoints;
+    }
 }

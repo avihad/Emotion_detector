@@ -5,6 +5,8 @@ import org.opencv.highgui.Highgui;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
+import java.util.Collection;
+import java.util.List;
 
 public class Utilities
 {
@@ -74,7 +76,7 @@ public class Utilities
         Highgui.imwrite(fileName, image);
     }
 
-    public static void drawConnectingLineBetween(Mat image, Point... points)
+    public static void drawCollectionLineOf(Mat image, List<Point> points)
     {
         for (Point point : points)
         {
@@ -83,9 +85,9 @@ public class Utilities
 
         int i = 0;
         int j = 1;
-        while(j < points.length)
+        while(j < points.size())
         {
-            Utilities.drawLine(points[i++], points[j++], image);
+            Utilities.drawLine(points.get(i++), points.get(j++), image);
         }
     }
 }
