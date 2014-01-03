@@ -51,4 +51,25 @@ public class ParabolicLinearRegression
 
         return regression.estimateRegressionParameters();
     }
+
+    /**
+     * Tests weather the coefficients supply the function: a*x^2 + b*x + c with a reasonably small error
+     * @param input - the points on which the regression was applied
+     * @param resultingCoefficients - the parameters a, b, c
+     */
+    public static void testResult(Collection<Point> input, double[] resultingCoefficients)
+    {
+        double a = resultingCoefficients[1];
+        double b = resultingCoefficients[2];
+        double c = resultingCoefficients[3];
+
+        double actualY;
+        double expectedY;
+        for (Point point : input)
+        {
+            actualY = a*(point.x*point.x) + b*point.x + c;
+            expectedY = point.y;
+            System.out.println("For point: ["+point.x+","+point.y+"] got: " + actualY + ", expected: " + expectedY);
+        }
+    }
 }

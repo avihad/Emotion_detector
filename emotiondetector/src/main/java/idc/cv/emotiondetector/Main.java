@@ -10,7 +10,6 @@ import org.opencv.core.Point;
 import org.opencv.core.Rect;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -19,6 +18,9 @@ import static org.opencv.imgproc.Imgproc.cvtColor;
 
 public class Main
 {
+    private static final int xGapBetweenPoints = 10;
+    private static final double yGrowthRate = 7;
+
     public static void main(String[] args) throws Exception
     {
         // Load the native library.
@@ -37,6 +39,8 @@ public class Main
         double[] parabolaCoefficients = ParabolicLinearRegression.linearRegressionOf(lowerLipPoints);
 
         System.out.println("Coefficient of x^2 is: " + parabolaCoefficients[1]);
+
+        ParabolicLinearRegression.testResult(lowerLipPoints, parabolaCoefficients);
 
         Utilities.writeImageToFile("gray.png", smileImage);
     }
@@ -61,11 +65,11 @@ public class Main
     {
         List<Point> lowerLipPoints = new ArrayList<Point>();
 
-        int heightLookupRange = 0;
-        for (double xIndex = bottomMiddle.x - 10; xIndex > mouth.x; xIndex -= 10)
+        double heightLookupRange = 0;
+        for (double xIndex = bottomMiddle.x - xGapBetweenPoints; xIndex > mouth.x; xIndex -= xGapBetweenPoints)
         {
-            lowerLipPoints.add(findLocalMinimum(image, new Point(xIndex, bottomMiddle.y), 0, heightLookupRange));
-            heightLookupRange += 7;
+            lowerLipPoints.add(findLocalMinimum(image, new Point(xIndex, bottomMiddle.y), 0, (int)heightLookupRange));
+            heightLookupRange += yGrowthRate;
         }
 
         return lowerLipPoints;
@@ -75,11 +79,11 @@ public class Main
     {
         List<Point> lowerLipPoints = new ArrayList<Point>();
 
-        int heightLookupRange = 0;
-        for (double xIndex = bottomMiddle.x + 10; xIndex <= mouth.x + mouth.width; xIndex += 10)
+        double heightLookupRange = 0;
+        for (double xIndex = bottomMiddle.x + xGapBetweenPoints; xIndex <= mouth.x + mouth.width; xIndex += xGapBetweenPoints)
         {
-            lowerLipPoints.add(findLocalMinimum(image, new Point(xIndex, bottomMiddle.y), 0, heightLookupRange));
-            heightLookupRange += 7;
+            lowerLipPoints.add(findLocalMinimum(image, new Point(xIndex, bottomMiddle.y), 0, (int)heightLookupRange));
+            heightLookupRange += yGrowthRate;
         }
 
         return lowerLipPoints;
@@ -97,8 +101,6 @@ public class Main
                 minimum = new Point(startPoint.x, startPoint.y + offset - yAxisAdder);
                 minimumValue = image.get((int) minimum.y, (int) minimum.x)[0];
             }
-
-            System.out.println(Arrays.toString(image.get((int) minimum.y, (int) minimum.x)));
         }
         return minimum;
     }
