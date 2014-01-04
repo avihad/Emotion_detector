@@ -1,7 +1,7 @@
 package idc.cv.emotiondetector;
 
 import idc.cv.emotiondetector.detectors.MouthDetectorImproved;
-import idc.cv.emotiondetector.pointsOfInterestDetection.BottomLipPointsDetector;
+import idc.cv.emotiondetector.smileDetection.BottomLipPointsDetector;
 import idc.cv.emotiondetector.utillities.Optional;
 import idc.cv.emotiondetector.utillities.ParabolicLinearRegression;
 import idc.cv.emotiondetector.utillities.Utilities;
@@ -29,10 +29,14 @@ public class Main
 
         Rect mouthRect = smilingMouth.get();
 
-        identifySmile(smileImage, mouthRect);
+        double[] parabolaCoefficients = smileCurveOf(smileImage, mouthRect);
+
+        System.out.println("Coefficient of x^2 is: " + parabolaCoefficients[1]);
+
+        Utilities.writeImageToFile("gray.png", smileImage);
     }
 
-    private static void identifySmile(Mat smileImage, Rect mouth)
+    private static double[] smileCurveOf(Mat smileImage, Rect mouth)
     {
         cvtColor(smileImage, smileImage, COLOR_RGB2GRAY);
 
@@ -40,12 +44,8 @@ public class Main
 
         double[] parabolaCoefficients = ParabolicLinearRegression.linearRegressionOf(lowerLipPoints);
 
-        System.out.println("Coefficient of x^2 is: " + parabolaCoefficients[1]);
+        ParabolicLinearRegression.testResult(lowerLipPoints, parabolaCoefficients);
 
-        //ParabolicLinearRegression.testResult(lowerLipPoints, parabolaCoefficients);
-
-        Utilities.writeImageToFile("gray.png", smileImage);
+        return parabolaCoefficients;
     }
-
-
 }
