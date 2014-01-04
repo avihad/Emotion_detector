@@ -1,6 +1,7 @@
 package idc.cv.emotiondetector.detectors;
 
 import idc.cv.emotiondetector.MovieMouthTracker;
+import idc.cv.emotiondetector.utillities.Utilities;
 import idc.cv.emotiondetector.utillities.VideoReader;
 
 import java.io.File;
@@ -85,33 +86,48 @@ public enum PulseDetector
 
 	public SortedMap<Integer, Integer> calcPulseFromSamples(SortedMap<Integer, double[][]> frameSamples, int threshold, int movieFrameRate) {
 
-		SortedMap<Integer, Integer> pulseByFrame = new TreeMap<>();
+		SortedMap<Integer, Integer> pulseByFrame;
 
 		List<Integer> identicaleSampleFrameNum = new ArrayList<>();
 
-		double[][] comprationsValue = frameSamples.get(frameSamples.firstKey());
+		Integer comparationFrameNum = frameSamples.firstKey();
+		double[][] comprationsValue = frameSamples.get(comparationFrameNum);
 
 		for (Map.Entry<Integer, double[][]> sample : frameSamples.entrySet()) {
 
-			if (isSampleNotDiffer(comprationsValue, sample.getValue(), threshold)) {
-				identicaleSampleFrameNum.add(sample.getKey());
+			Integer sampleKey = sample.getKey();
+			if ((sampleKey - comparationFrameNum) > 10 && isSampleNotDiffer(comprationsValue, sample.getValue(), threshold)) {
+				identicaleSampleFrameNum.add(sampleKey);
+				comparationFrameNum = sampleKey;
+				comprationsValue = sample.getValue();
 			}
 		}
 
-		Collections.sort(identicaleSampleFrameNum);
-
-		for (int i = 0; i < identicaleSampleFrameNum.size() - 1; i++) {
-
-			Integer firstFrame = identicaleSampleFrameNum.get(i);
-			Integer secondFrame = identicaleSampleFrameNum.get(i + 1);
-			Integer pulse = (movieFrameRate / (secondFrame - firstFrame)) * 60;
-
-			pulseByFrame.put(secondFrame, pulse);
-
-		}
+		int frameResolution = 2;
+		pulseByFrame = calcPulseRateByFrameResolution(movieFrameRate, identicaleSampleFrameNum, frameResolution);
 
 		return pulseByFrame;
 
+	}
+
+	private SortedMap<Integer, Integer> calcPulseRateByFrameResolution(double movieFrameRate, List<Integer> identicaleSampleFrameNum,
+			int frameResolution) {
+
+		SortedMap<Integer, Integer> pulseByFrame = new TreeMap<>();
+
+		Collections.sort(identicaleSampleFrameNum);
+
+		for (int i = 0; i < identicaleSampleFrameNum.size() - frameResolution; i++) {
+
+			Integer firstFrame = identicaleSampleFrameNum.get(i);
+			Integer secondFrame = identicaleSampleFrameNum.get(i + frameResolution);
+			Double pulse = (movieFrameRate / (secondFrame - firstFrame)) * 60;
+
+			pulseByFrame.put(secondFrame, pulse.intValue());
+			System.out.println("Pulse calculation for frames #" + firstFrame + " #" + secondFrame + " is: " + pulse.intValue());
+		}
+
+		return pulseByFrame;
 	}
 
 	/**
@@ -173,7 +189,7 @@ public enum PulseDetector
 		sb.append(movieFileName.substring(0, movieFileName.length() - 4));
 		sb.append("-ideal-from-0.83333-to-1-alpha-50-level-6-chromAtn-1.avi");
 		String outputFileName = sb.toString();
-		File outputFile = new File(outputFileName);
+		File outputFile = new File(Utilities.readResource(outputFileName));
 
 		if (!outputFile.exists()) {
 
