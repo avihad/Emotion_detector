@@ -6,7 +6,7 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Rect;
 
-public enum EyeDetector
+public enum EyeDetector implements BodyPartDetector<Pair<Rect, Rect>>
 {
     instance;
 
@@ -15,7 +15,7 @@ public enum EyeDetector
      * Result contains  at first - the left eye
      *                 the second - the right eye
      * */
-    public Optional<Pair<Rect, Rect>> detectEyes(Mat image) throws Exception
+    public Optional<Pair<Rect, Rect>> detectIn(Mat image) throws Exception
     {
         MatOfRect eyes = FacePartDetector.instance.detect(image, FacePartCascade.EYE);
 

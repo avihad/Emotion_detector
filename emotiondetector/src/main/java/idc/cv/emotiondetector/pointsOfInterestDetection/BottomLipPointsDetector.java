@@ -1,4 +1,4 @@
-package idc.cv.emotiondetector.smileDetection;
+package idc.cv.emotiondetector.pointsOfInterestDetection;
 
 import idc.cv.emotiondetector.utillities.Utilities;
 import org.opencv.core.Mat;

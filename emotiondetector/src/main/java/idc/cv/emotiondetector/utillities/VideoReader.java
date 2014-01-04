@@ -1,7 +1,6 @@
 package idc.cv.emotiondetector.utillities;
 
-import idc.cv.emotiondetector.detectors.EyesPairDetector;
-import idc.cv.emotiondetector.detectors.MouthDetector;
+import idc.cv.emotiondetector.detectors.MouthDetectorImproved;
 import org.opencv.core.Mat;
 import org.opencv.core.Rect;
 import org.opencv.highgui.VideoCapture;
@@ -32,12 +31,7 @@ public enum VideoReader
         int frameNumber = 1;
         while (videoCapture.read(newFrame) && frameNumber < 100)
         {
-            Optional<Rect> eyes = EyesPairDetector.instance.detectEyePair(newFrame);
-            if (eyes.isPresent())
-            {
-                Utilities.drawRect(eyes.get(), newFrame);
-            }
-            Optional<Rect> mouth = MouthDetector.instance.detectMouth(newFrame);
+            Optional<Rect> mouth = MouthDetectorImproved.instance.detectIn(newFrame);
             if (mouth.isPresent())
             {
                 Utilities.drawRect(mouth.get(), newFrame);

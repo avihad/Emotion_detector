@@ -2,11 +2,11 @@ package idc.cv.emotiondetector.detectors;
 
 import java.io.UnsupportedEncodingException;
 
+import idc.cv.emotiondetector.pointsOfInterestDetection.BottomMiddleEyesDetector;
 import idc.cv.emotiondetector.utillities.Optional;
-import idc.cv.emotiondetector.utillities.Pair;
 import org.opencv.core.*;
 
-public enum MouthDetector
+public enum MouthDetector implements BodyPartDetector<Rect>
 {
     instance;
 
@@ -17,7 +17,7 @@ public enum MouthDetector
      *
      * @throws UnsupportedEncodingException
      */
-    public Optional<Rect> detectMouth(Mat image) throws Exception
+    public Optional<Rect> detectIn(Mat image) throws Exception
     {
         Point eyesBottomMiddlePoint = BottomMiddleEyesDetector.instance.getPointOfBottomMiddleEyes(image);
 

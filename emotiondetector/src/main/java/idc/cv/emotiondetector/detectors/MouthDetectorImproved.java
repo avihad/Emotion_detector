@@ -6,7 +6,7 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Rect;
 
-public enum MouthDetectorImproved
+public enum MouthDetectorImproved implements BodyPartDetector<Rect>
 {
     instance;
 
@@ -17,9 +17,16 @@ public enum MouthDetectorImproved
      *
      * @throws java.io.UnsupportedEncodingException
      */
-    public Optional<Rect> detectMouth(Mat image) throws Exception
+    public Optional<Rect> detectIn(Mat image) throws Exception
     {
-        Rect face = FacePartDetector.instance.detect(image, FacePartCascade.FACE).toArray()[0];
+        Optional<Rect> optionalFace = FaceDetector.instance.detectIn(image);
+
+        if (!optionalFace.isPresent())
+        {
+            return Optional.absent();
+        }
+
+        Rect face = optionalFace.get();
 
         Rect bottomFace = new Rect(face.x, face.y + ((2 * face.height) / 3), face.width, face.height / 3);
 

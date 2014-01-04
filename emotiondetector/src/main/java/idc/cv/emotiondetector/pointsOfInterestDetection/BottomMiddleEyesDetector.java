@@ -1,5 +1,7 @@
-package idc.cv.emotiondetector.detectors;
+package idc.cv.emotiondetector.pointsOfInterestDetection;
 
+import idc.cv.emotiondetector.detectors.EyeDetector;
+import idc.cv.emotiondetector.detectors.EyesPairDetector;
 import idc.cv.emotiondetector.utillities.Optional;
 import idc.cv.emotiondetector.utillities.Pair;
 import org.opencv.core.Mat;
@@ -12,14 +14,14 @@ public enum BottomMiddleEyesDetector
 
     public Point getPointOfBottomMiddleEyes(Mat image) throws Exception
     {
-        Optional<Rect> optionalEyesPair = EyesPairDetector.instance.detectEyePair(image);
+        Optional<Rect> optionalEyesPair = EyesPairDetector.instance.detectIn(image);
 
         if (optionalEyesPair.isPresent())
         {
            return new Point((optionalEyesPair.get().x + optionalEyesPair.get().width/2), optionalEyesPair.get().y + optionalEyesPair.get().height);
         }
 
-        Optional<Pair<Rect, Rect>> eyesSeparately = EyeDetector.instance.detectEyes(image);
+        Optional<Pair<Rect, Rect>> eyesSeparately = EyeDetector.instance.detectIn(image);
 
         if (eyesSeparately.isPresent())
         {

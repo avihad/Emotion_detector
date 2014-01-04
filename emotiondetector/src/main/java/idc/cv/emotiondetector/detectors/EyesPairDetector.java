@@ -5,11 +5,11 @@ import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Rect;
 
-public enum EyesPairDetector
+public enum EyesPairDetector implements BodyPartDetector<Rect>
 {
     instance;
 
-    public Optional<Rect> detectEyePair(Mat image) throws Exception
+    public Optional<Rect> detectIn(Mat image) throws Exception
     {
         MatOfRect suspectedEyePairs = FacePartDetector.instance.detect(image, FacePartCascade.EYE_PAIR);
 

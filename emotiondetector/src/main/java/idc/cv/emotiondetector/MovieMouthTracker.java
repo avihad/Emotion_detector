@@ -34,7 +34,7 @@ public enum MovieMouthTracker
         Map<Integer, Rect> mouthsAlongMovie = new HashMap<Integer, Rect>();
         while (videoCapture.read(frame))
         {
-            Optional<Rect> optionalMouth = MouthDetector.instance.detectMouth(frame);
+            Optional<Rect> optionalMouth = MouthDetector.instance.detectIn(frame);
             /* Rect mouth = optionalMouth.get();
             for (int row = 0; row < frame.size().height; row++)
             {

@@ -1,14 +1,16 @@
 package idc.cv.emotiondetector;
 
 import idc.cv.emotiondetector.detectors.MouthDetectorImproved;
-import idc.cv.emotiondetector.smileDetection.BottomLipPointsDetector;
+import idc.cv.emotiondetector.pointsOfInterestDetection.BottomLipPointsDetector;
 import idc.cv.emotiondetector.utillities.Optional;
 import idc.cv.emotiondetector.utillities.ParabolicLinearRegression;
 import idc.cv.emotiondetector.utillities.Utilities;
+import idc.cv.emotiondetector.utillities.VideoReader;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
+import org.opencv.highgui.VideoCapture;
 
 import java.util.Collection;
 
@@ -23,17 +25,27 @@ public class Main
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
         //Mat smileImage = Utilities.readImage("/womanSmiles.png");
-        Mat smileImage = Utilities.readImage("/nonSmile.jpg");
+        //Mat smileImage = Utilities.readImage("/nonSmile.jpg");
 
-        Optional<Rect> smilingMouth = MouthDetectorImproved.instance.detectMouth(smileImage);
+        //VideoReader.instance.storeAsFrames("/avihad2.avi");
+        Mat movieFrame = new Mat();
+        VideoCapture videoCapture = VideoReader.instance.open("/avihad2.avi");
 
-        Rect mouthRect = smilingMouth.get();
+        while (videoCapture.read(movieFrame))
+        {
+            Optional<Rect> optionalMouth = MouthDetectorImproved.instance.detectIn(movieFrame);
 
-        double[] parabolaCoefficients = smileCurveOf(smileImage, mouthRect);
+            if (optionalMouth.isPresent())
+            {
+                Rect mouth = optionalMouth.get();
 
-        System.out.println("Coefficient of x^2 is: " + parabolaCoefficients[1]);
+                double[] parabolaCoefficients = smileCurveOf(movieFrame, mouth);
 
-        Utilities.writeImageToFile("gray.png", smileImage);
+                System.out.println("Coefficient of x^2 is: " + parabolaCoefficients[1]);
+
+                Utilities.writeImageToFile("gray.png", movieFrame);
+            }
+        }
     }
 
     private static double[] smileCurveOf(Mat smileImage, Rect mouth)
