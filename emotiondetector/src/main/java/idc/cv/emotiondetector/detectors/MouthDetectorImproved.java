@@ -45,7 +45,6 @@ public enum MouthDetectorImproved
             bestChoice = Optional.of(new Rect(bottomFace.x + mouth.x, bottomFace.y + mouth.y, mouth.width, mouth.height));
         }
 
-        Utilities.drawRectAndStore(bestChoice.get(), image, "mouths.png");
         return bestChoice;
     }
 }

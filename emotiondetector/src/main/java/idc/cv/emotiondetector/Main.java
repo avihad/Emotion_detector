@@ -18,15 +18,13 @@ import static org.opencv.imgproc.Imgproc.cvtColor;
 
 public class Main
 {
-    private static final int xGapBetweenPoints = 10;
-    private static final double yGrowthRate = 7;
-
     public static void main(String[] args) throws Exception
     {
         // Load the native library.
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-        Mat smileImage = Utilities.readImage("/womanSmiles.png");
+        //Mat smileImage = Utilities.readImage("/womanSmiles.png");
+        Mat smileImage = Utilities.readImage("/nonSmile.jpg");
 
         Optional<Rect> smilingMouth = MouthDetectorImproved.instance.detectMouth(smileImage);
 
@@ -47,29 +45,27 @@ public class Main
 
     private static Collection<Point> findPointsAlongBottomLipEdge(Mat smileImage, Rect mouthRect)
     {
-        Point middleLipCorner = findLocalMinimum(smileImage, new Point(mouthRect.x + mouthRect.width / 2, mouthRect.y + mouthRect.height), 65, 65);
+        Point middleBottomLip = findLocalMinimum(smileImage, new Point(mouthRect.x + mouthRect.width / 2, mouthRect.y + mouthRect.height), 30, mouthRect.height);
 
         //left points from middle:
-        List<Point> lowerLipPoints = findLowerLipLeftPoints(middleLipCorner, mouthRect, smileImage);
+        List<Point> lowerLipPoints = findLowerLipLeftPoints(middleBottomLip, mouthRect, smileImage);
         //middle point
-        lowerLipPoints.add(middleLipCorner);
+        lowerLipPoints.add(middleBottomLip);
         //right points from middle
-        lowerLipPoints.addAll(findLowerLipRightPoints(middleLipCorner, mouthRect, smileImage));
+        lowerLipPoints.addAll(findLowerLipRightPoints(middleBottomLip, mouthRect, smileImage));
 
         Utilities.drawCollectionLineOf(smileImage, lowerLipPoints);
 
-        return normalizeCollectionByBase(lowerLipPoints, middleLipCorner);
+        return normalizeCollectionByBase(lowerLipPoints, middleBottomLip);
     }
 
     private static List<Point> findLowerLipLeftPoints(Point bottomMiddle, Rect mouth, Mat image)
     {
         List<Point> lowerLipPoints = new ArrayList<Point>();
 
-        double heightLookupRange = 0;
-        for (double xIndex = bottomMiddle.x - xGapBetweenPoints; xIndex > mouth.x; xIndex -= xGapBetweenPoints)
+        for (double xIndex = bottomMiddle.x - 1; xIndex > mouth.x; xIndex -= 1)
         {
-            lowerLipPoints.add(findLocalMinimum(image, new Point(xIndex, bottomMiddle.y), 0, (int)heightLookupRange));
-            heightLookupRange += yGrowthRate;
+            lowerLipPoints.add(findLocalMinimum(image, new Point(xIndex, bottomMiddle.y), 0, mouth.height));
         }
 
         return lowerLipPoints;
@@ -79,30 +75,40 @@ public class Main
     {
         List<Point> lowerLipPoints = new ArrayList<Point>();
 
-        double heightLookupRange = 0;
-        for (double xIndex = bottomMiddle.x + xGapBetweenPoints; xIndex <= mouth.x + mouth.width; xIndex += xGapBetweenPoints)
+        for (double xIndex = bottomMiddle.x + 1; xIndex <= mouth.x + mouth.width; xIndex += 1)
         {
-            lowerLipPoints.add(findLocalMinimum(image, new Point(xIndex, bottomMiddle.y), 0, (int)heightLookupRange));
-            heightLookupRange += yGrowthRate;
+            lowerLipPoints.add(findLocalMinimum(image, new Point(xIndex, bottomMiddle.y), 0, mouth.height));
         }
 
         return lowerLipPoints;
     }
 
-    private static Point findLocalMinimum(Mat image, Point startPoint, int offset, int numOfPixelsToGoUp)
+    private static Point findLocalMinimum(Mat image, Point startPoint, int offset, int mouthHeight)
     {
-        double minimumValue = 255;
-        Point minimum = startPoint;
-
-        for (int yAxisAdder = 0; yAxisAdder < numOfPixelsToGoUp; yAxisAdder++)
+        for (int yAxisAdder = 0; startPoint.y + offset - yAxisAdder > 0 ; yAxisAdder++)
         {
-            if (image.get((int) startPoint.y + offset - yAxisAdder, (int) startPoint.x)[0] < minimumValue)
+            System.out.println("Point: ["+((int) startPoint.x)+","+((int) startPoint.y + offset - yAxisAdder)+"], " +
+                               "color: " + image.get((int) startPoint.y + offset - yAxisAdder, (int) startPoint.x)[0]);
+
+            int imageX = (int) startPoint.x;
+            int imageY = (int) startPoint.y + offset - yAxisAdder;
+            double pixelColorValue = image.get(imageY, imageX)[0];
+
+            boolean suspectedToBeLocalMinimum = true;
+
+            for (int y = 1; y <= mouthHeight && suspectedToBeLocalMinimum ; y++)
             {
-                minimum = new Point(startPoint.x, startPoint.y + offset - yAxisAdder);
-                minimumValue = image.get((int) minimum.y, (int) minimum.x)[0];
+                suspectedToBeLocalMinimum = image.get(imageY + y, imageX)[0] > pixelColorValue;
+            }
+
+            if (suspectedToBeLocalMinimum)
+            {
+                return new Point(startPoint.x, startPoint.y + offset - yAxisAdder);
             }
         }
-        return minimum;
+
+        System.out.println();
+        return startPoint;
     }
 
     private static Point normalizeByBase(Point point, Point base)
