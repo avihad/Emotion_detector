@@ -5,8 +5,12 @@ import idc.cv.emotiondetector.utillities.VideoReader;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.opencv.core.Mat;
 import org.opencv.core.Rect;
@@ -22,13 +26,13 @@ public enum PulseDetector
 	 * calculate the difference between the color of the pixels in the movie
 	 * frames
 	 */
-	public static Map<Integer, double[][]> detectPulse(String movieFileName) throws Exception {
+	public SortedMap<Integer, double[][]> detectPulse(String movieFileName) throws Exception {
 
 		// Call video magnifying algorithm
 		String magnifyMovieFileName = executeVideoMagnifyer(movieFileName);
 		System.out.println("Finish video magnifier run");
 
-		Map<Integer, double[][]> frameSamples = new HashMap<Integer, double[][]>();
+		SortedMap<Integer, double[][]> frameSamples = new TreeMap<Integer, double[][]>();
 
 		VideoCapture videoAfterMagnifying = VideoReader.instance.open(magnifyMovieFileName);
 
@@ -51,7 +55,7 @@ public enum PulseDetector
 		return frameSamples;
 	}
 
-	private static double[][] sampleFrame(Mat frame, Rect r) {
+	private double[][] sampleFrame(Mat frame, Rect r) {
 
 		double[][] samples = new double[4][];
 
@@ -79,7 +83,72 @@ public enum PulseDetector
 
 	}
 
-	public static void printSamples(Map<Integer, double[][]> pulseSamples) {
+	public SortedMap<Integer, Integer> calcPulseFromSamples(SortedMap<Integer, double[][]> frameSamples, int threshold, int movieFrameRate) {
+
+		SortedMap<Integer, Integer> pulseByFrame = new TreeMap<>();
+
+		List<Integer> identicaleSampleFrameNum = new ArrayList<>();
+
+		double[][] comprationsValue = frameSamples.get(frameSamples.firstKey());
+
+		for (Map.Entry<Integer, double[][]> sample : frameSamples.entrySet()) {
+
+			if (isSampleNotDiffer(comprationsValue, sample.getValue(), threshold)) {
+				identicaleSampleFrameNum.add(sample.getKey());
+			}
+		}
+
+		Collections.sort(identicaleSampleFrameNum);
+
+		for (int i = 0; i < identicaleSampleFrameNum.size() - 1; i++) {
+
+			Integer firstFrame = identicaleSampleFrameNum.get(i);
+			Integer secondFrame = identicaleSampleFrameNum.get(i + 1);
+			Integer pulse = (movieFrameRate / (secondFrame - firstFrame)) * 60;
+
+			pulseByFrame.put(secondFrame, pulse);
+
+		}
+
+		return pulseByFrame;
+
+	}
+
+	/**
+	 * Check if one of the samples in comprationsValue and value don't differ by
+	 * more then threshold
+	 * 
+	 * @param comprationsValue
+	 * @param value
+	 * @param threshold
+	 * */
+	private boolean isSampleNotDiffer(double[][] comprationsValue, double[][] value, int threshold) {
+
+		if (comprationsValue == null || value == null || comprationsValue.length != value.length) {
+			return Boolean.FALSE;
+		}
+
+		boolean isSampleMatch = Boolean.FALSE;
+
+		for (int i = 0; i < value.length && !isSampleMatch; i++) {
+
+			if (comprationsValue[i] == null || value[i] == null || comprationsValue[i].length != value[i].length) {
+				continue;
+			}
+
+			isSampleMatch = Boolean.TRUE;
+			for (int j = 0; j < value[i].length && isSampleMatch; j++) {
+				if (Math.abs(comprationsValue[i][j] - value[i][j]) > threshold) {
+					isSampleMatch = Boolean.FALSE;
+					continue;
+				}
+			}
+
+		}
+		return isSampleMatch;
+	}
+
+	public void printSamples(Map<Integer, double[][]> pulseSamples) {
 
 		for (Map.Entry<Integer, double[][]> entry : pulseSamples.entrySet()) {
 			System.out.println();
@@ -88,13 +157,17 @@ public enum PulseDetector
 			double[][] samples = entry.getValue();
 			for (int i = 0; i < samples.length; i++) {
 				System.out.print("Sample #: " + i + " Value: ");
-				System.out.println(entry.getValue()[i]);
+				for (int j = 0; j < entry.getValue()[i].length; j++) {
+					System.out.print(" " + entry.getValue()[i][j]);
+
+				}
+				System.out.println();
 			}
 
 		}
 	}
 
-	private static String executeVideoMagnifyer(String movieFileName) throws IOException, InterruptedException {
+	private String executeVideoMagnifyer(String movieFileName) throws IOException, InterruptedException {
 
 		StringBuilder sb = new StringBuilder();
 		sb.append(movieFileName.substring(0, movieFileName.length() - 4));
@@ -109,14 +182,13 @@ public enum PulseDetector
 					+ movieFileName);
 
 			// Executing VideoMagnification , after the execution finish it
-			// create
-			// anew file called finishMagnifierExe
+			// create a new file called finishMagnifierExe
 			Runtime.getRuntime().exec(commandAndArgs);
 
 			File f = new File("finishMagnifierExe");
 
 			while (!f.exists()) {
-				Thread.sleep(3000);
+				Thread.sleep(2000);
 			}
 
 			f.delete();
