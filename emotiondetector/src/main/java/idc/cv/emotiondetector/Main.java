@@ -6,16 +6,13 @@ import idc.cv.emotiondetector.utillities.Optional;
 import idc.cv.emotiondetector.utillities.ParabolicLinearRegression;
 import idc.cv.emotiondetector.utillities.Utilities;
 import idc.cv.emotiondetector.utillities.VideoReader;
-import org.opencv.core.Core;
-import org.opencv.core.Mat;
-import org.opencv.core.Point;
-import org.opencv.core.Rect;
+import org.opencv.core.*;
 import org.opencv.highgui.VideoCapture;
 
 import java.util.Collection;
+import java.util.List;
 
-import static org.opencv.imgproc.Imgproc.COLOR_RGB2GRAY;
-import static org.opencv.imgproc.Imgproc.cvtColor;
+import static org.opencv.imgproc.Imgproc.*;
 
 public class Main
 {
@@ -24,12 +21,26 @@ public class Main
         // Load the native library.
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-        //Mat smileImage = Utilities.readImage("/womanSmiles.png");
-        //Mat smileImage = Utilities.readImage("/nonSmile.jpg");
+        Mat neutralImage = Utilities.readImage("/nonSmile.jpg");
+        Mat smileImage = Utilities.readImage("/womanSmiles.png");
 
-        //VideoReader.instance.storeAsFrames("/avihad2.avi");
-        Mat movieFrame = new Mat();
-        VideoCapture videoCapture = VideoReader.instance.open("/avihad2.avi");
+        Rect neutralMouth = MouthDetectorImproved.instance.detectIn(neutralImage).get();
+        Rect smilingMouth = MouthDetectorImproved.instance.detectIn(smileImage).get();
+
+        double[] neutralCurve = smileCurveOf(neutralImage, neutralMouth);
+        double[] smileCurve = smileCurveOf(smileImage, smilingMouth);
+
+
+        Utilities.writeImageToFile("neutralResult.jpg", neutralImage);
+        Utilities.writeImageToFile("smileResult.jpg", smileImage);
+
+        System.out.println("neutral coefficient: " + neutralCurve[1]);
+        System.out.println("smile coefficient: " + smileCurve[1]);
+
+        //VideoReader.instance.storeAsFrames("/shiran.avi");
+        /*Mat movieFrame = new Mat();
+        VideoCapture videoCapture = VideoReader.instance.open("/shiran.avi");
+        int frameNumber = 1;
 
         while (videoCapture.read(movieFrame))
         {
@@ -41,22 +52,32 @@ public class Main
 
                 double[] parabolaCoefficients = smileCurveOf(movieFrame, mouth);
 
-                System.out.println("Coefficient of x^2 is: " + parabolaCoefficients[1]);
+                if (parabolaCoefficients[1] >= 0.001)
+                {
+                    System.out.println("Smile is detected at frame number: "+frameNumber+ ", coefficient of x^2 is: " + parabolaCoefficients[1]);
+                }
 
-                Utilities.writeImageToFile("gray.png", movieFrame);
+                if (frameNumber == 15)
+                {
+                    Utilities.drawRect(mouth, movieFrame);
+                    Utilities.writeImageToFile("gray.png", movieFrame);
+                }
             }
-        }
+            frameNumber++;
+        }*/
     }
 
     private static double[] smileCurveOf(Mat smileImage, Rect mouth)
     {
         cvtColor(smileImage, smileImage, COLOR_RGB2GRAY);
 
+        //GaussianBlur(smileImage, smileImage, new Size(3, 3), 0, 0, BORDER_DEFAULT);
+
         Collection<Point> lowerLipPoints = BottomLipPointsDetector.findBottomLipPoints(smileImage, mouth);
 
         double[] parabolaCoefficients = ParabolicLinearRegression.linearRegressionOf(lowerLipPoints);
 
-        ParabolicLinearRegression.testResult(lowerLipPoints, parabolaCoefficients);
+        //ParabolicLinearRegression.testResult(lowerLipPoints, parabolaCoefficients);
 
         return parabolaCoefficients;
     }
