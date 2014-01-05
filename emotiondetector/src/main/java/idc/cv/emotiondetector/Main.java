@@ -9,6 +9,7 @@ import idc.cv.emotiondetector.utillities.VideoReader;
 import org.opencv.core.*;
 import org.opencv.highgui.VideoCapture;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.List;
 
@@ -30,16 +31,32 @@ public class Main
         double[] neutralCurve = smileCurveOf(neutralImage, neutralMouth);
         double[] smileCurve = smileCurveOf(smileImage, smilingMouth);
 
-
         Utilities.writeImageToFile("neutralResult.jpg", neutralImage);
         Utilities.writeImageToFile("smileResult.jpg", smileImage);
 
         System.out.println("neutral coefficient: " + neutralCurve[1]);
         System.out.println("smile coefficient: " + smileCurve[1]);
+    }
 
-        //VideoReader.instance.storeAsFrames("/shiran.avi");
-        /*Mat movieFrame = new Mat();
-        VideoCapture videoCapture = VideoReader.instance.open("/shiran.avi");
+    private static void analyzeMovie(String neutralImagePath, String smileImagePath, String movieFilePath, double smileThreshold, double neutralThreshold) throws Exception
+    {
+        Mat neutralImage = Utilities.readImage(neutralImagePath);
+        Mat smileImage = Utilities.readImage(smileImagePath);
+
+        Rect neutralMouth = MouthDetectorImproved.instance.detectIn(neutralImage).get();
+        Rect smilingMouth = MouthDetectorImproved.instance.detectIn(smileImage).get();
+
+        Utilities.writeImageToFile("neutralResult.jpg", neutralImage);
+        Utilities.writeImageToFile("smileResult.jpg", smileImage);
+
+        double neutralCurve = smileCurveOf(neutralImage, neutralMouth)[1];
+        double smileCurve = smileCurveOf(smileImage, smilingMouth)[1];
+
+        System.out.println("neutral curve: " + neutralCurve);
+        System.out.println("smile curve: " + smileCurve);
+
+        Mat movieFrame = new Mat();
+        VideoCapture videoCapture = VideoReader.instance.open(movieFilePath);
         int frameNumber = 1;
 
         while (videoCapture.read(movieFrame))
@@ -50,21 +67,22 @@ public class Main
             {
                 Rect mouth = optionalMouth.get();
 
-                double[] parabolaCoefficients = smileCurveOf(movieFrame, mouth);
+                double mouthCurve = smileCurveOf(movieFrame, mouth)[1];
 
-                if (parabolaCoefficients[1] >= 0.001)
+                if (mouthCurve >= smileCurve || smileCurve - mouthCurve <= smileThreshold)
                 {
-                    System.out.println("Smile is detected at frame number: "+frameNumber+ ", coefficient of x^2 is: " + parabolaCoefficients[1]);
+                    System.out.println("Smile is detected at frame number: "+frameNumber);
                 }
-
-                if (frameNumber == 15)
+                else
                 {
-                    Utilities.drawRect(mouth, movieFrame);
-                    Utilities.writeImageToFile("gray.png", movieFrame);
+                    if (mouthCurve > neutralCurve + neutralThreshold)
+                    {
+                        System.out.println("Mouth movement is detected at frame number: "+frameNumber);
+                    }
                 }
             }
             frameNumber++;
-        }*/
+        }
     }
 
     private static double[] smileCurveOf(Mat smileImage, Rect mouth)
