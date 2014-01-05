@@ -1,7 +1,6 @@
 package idc.cv.emotiondetector.detectors;
 
 import idc.cv.emotiondetector.MovieMouthTracker;
-import idc.cv.emotiondetector.utillities.Utilities;
 import idc.cv.emotiondetector.utillities.VideoReader;
 
 import java.io.File;
@@ -86,8 +85,6 @@ public enum PulseDetector
 
 	public SortedMap<Integer, Integer> calcPulseFromSamples(SortedMap<Integer, double[][]> frameSamples, int threshold, int movieFrameRate) {
 
-		SortedMap<Integer, Integer> pulseByFrame;
-
 		List<Integer> identicaleSampleFrameNum = new ArrayList<>();
 
 		Integer comparationFrameNum = frameSamples.firstKey();
@@ -104,10 +101,7 @@ public enum PulseDetector
 		}
 
 		int frameResolution = 2;
-		pulseByFrame = calcPulseRateByFrameResolution(movieFrameRate, identicaleSampleFrameNum, frameResolution);
-
-		return pulseByFrame;
-
+		return calcPulseRateByFrameResolution(movieFrameRate, identicaleSampleFrameNum, frameResolution);
 	}
 
 	private SortedMap<Integer, Integer> calcPulseRateByFrameResolution(double movieFrameRate, List<Integer> identicaleSampleFrameNum,
@@ -189,9 +183,8 @@ public enum PulseDetector
 		sb.append(movieFileName.substring(0, movieFileName.length() - 4));
 		sb.append("-ideal-from-0.83333-to-1-alpha-50-level-6-chromAtn-1.avi");
 		String outputFileName = sb.toString();
-		File outputFile = new File(Utilities.readResource(outputFileName));
 
-		if (!outputFile.exists()) {
+		if (Object.class.getResource(outputFileName) == null) {
 
 			String relativePath = ".\\target\\classes\\";
 			String commandAndArgs = new String("cmd /c start " + relativePath + "VideoMagnification\\videoMagnifier.bat " + relativePath

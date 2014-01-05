@@ -16,17 +16,19 @@ public class PulseDetectorMain
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
 		try {
-			/*
-			SortedMap<Integer, double[][]> pulseSamples = PulseDetector.instance.detectPulse("/avihad2.mp4");
+
+			SortedMap<Integer, double[][]> pulseSamples = PulseDetector.instance.detectPulse("/avihad_pulse_check.mp4");
 			Utilities.writeObjectToFile(pulseSamples, "tempSamples");
 
 			SortedMap<Integer, Integer> pulseByFrame = PulseDetector.instance.calcPulseFromSamples(pulseSamples, 10, 29);
-			 */
 
-			SortedMap<Integer, double[][]> pulseSamples = (SortedMap<Integer, double[][]>) Utilities.readObjectFromFile("tempSamples");
+			// SortedMap<Integer, double[][]> pulseSamples = (SortedMap<Integer,
+			// double[][]>) Utilities.readObjectFromFile("tempSamples");
 			PulseDetector.instance.printSamples(pulseSamples);
 
-			SortedMap<Integer, Integer> pulseByFrame = PulseDetector.instance.calcPulseFromSamples(pulseSamples, 15, 29);
+			// SortedMap<Integer, Integer> pulseByFrame =
+			// PulseDetector.instance.calcPulseFromSamples(pulseSamples, 15,
+			// 29);
 			for (Map.Entry<Integer, Integer> entry : pulseByFrame.entrySet()) {
 				System.out.println("Frame #" + entry.getKey() + " Pulse: " + entry.getValue());
 			}
