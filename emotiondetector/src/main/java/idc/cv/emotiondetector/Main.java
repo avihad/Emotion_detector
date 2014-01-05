@@ -23,7 +23,7 @@ public class Main
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
         Mat neutralImage = Utilities.readImage("/nonSmile.jpg");
-        Mat smileImage = Utilities.readImage("/womanSmiles.png");
+        Mat smileImage = Utilities.readImage("/womanSmile.jpg");
 
         Rect neutralMouth = MouthDetectorImproved.instance.detectIn(neutralImage).get();
         Rect smilingMouth = MouthDetectorImproved.instance.detectIn(smileImage).get();

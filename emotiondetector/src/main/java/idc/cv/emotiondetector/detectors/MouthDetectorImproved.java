@@ -1,7 +1,6 @@
 package idc.cv.emotiondetector.detectors;
 
 import idc.cv.emotiondetector.utillities.Optional;
-import idc.cv.emotiondetector.utillities.Utilities;
 import org.opencv.core.Mat;
 import org.opencv.core.MatOfRect;
 import org.opencv.core.Rect;
