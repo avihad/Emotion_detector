@@ -1,5 +1,11 @@
 package idc.cv.emotiondetector.utillities;
 
+import idc.cv.emotiondetector.entities.DetectedEyePair;
+import idc.cv.emotiondetector.entities.DetectedFace;
+import idc.cv.emotiondetector.entities.DetectedFrame;
+import idc.cv.emotiondetector.entities.DetectedMouth;
+import idc.cv.emotiondetector.entities.DetectedMovie;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -10,6 +16,10 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.List;
 import java.util.SortedMap;
+
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
@@ -115,4 +125,48 @@ public class Utilities
 
 		return obj;
 	}
+
+	/**
+	 * Write the entity DetectedMovie into xml file named fileName using JAXB
+	 * 
+	 * @param xmlElement
+	 * @param fileName
+	 * @throws JAXBException
+	 * */
+	public static void witeToXml(DetectedMovie xmlElement, String fileName) throws JAXBException {
+
+		File file = new File(fileName);
+
+		JAXBContext jc = JAXBContext.newInstance(DetectedMovie.class);
+
+		Marshaller marshaller = jc.createMarshaller();
+		marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+
+		marshaller.marshal(xmlElement, file);
+
+	}
+
+	public static void xmlWriteExample() throws JAXBException {
+		DetectedMovie movie = new DetectedMovie();
+
+		Rect rect = new Rect(0, 0, 10, 10);
+		DetectedFrame frame1 = new DetectedFrame();
+		DetectedFrame frame2 = new DetectedFrame();
+
+		frame1.setFrameNumber(1);
+		frame1.setPulse(72);
+		frame1.addDetectedPart(new DetectedMouth(rect, Boolean.TRUE));
+		frame1.addDetectedPart(new DetectedEyePair(rect));
+
+		frame2.setFrameNumber(2);
+		frame2.addDetectedPart(new DetectedFace(rect));
+
+		movie.setName("SampleMovie");
+		movie.addFrame(frame1);
+		movie.addFrame(frame2);
+
+		Utilities.witeToXml(movie, "test.xml");
+
+	}
+
 }

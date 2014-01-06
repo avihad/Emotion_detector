@@ -93,7 +93,8 @@ public enum PulseDetector
 		for (Map.Entry<Integer, double[][]> sample : frameSamples.entrySet()) {
 
 			Integer sampleKey = sample.getKey();
-			if ((sampleKey - comparationFrameNum) > 10 && isSampleNotDiffer(comprationsValue, sample.getValue(), threshold)) {
+			if ((sampleKey - comparationFrameNum) > 9 && (sampleKey - comparationFrameNum) < 34
+					&& isSampleNotDiffer(comprationsValue, sample.getValue(), threshold)) {
 				identicaleSampleFrameNum.add(sampleKey);
 				comparationFrameNum = sampleKey;
 				comprationsValue = sample.getValue();

@@ -17,7 +17,7 @@ public class PulseDetectorMain
 
 		try {
 
-			SortedMap<Integer, double[][]> pulseSamples = PulseDetector.instance.detectPulse("/1.mp4");
+			SortedMap<Integer, double[][]> pulseSamples = PulseDetector.instance.detectPulse("/4.mp4");
 			Utilities.writeObjectToFile(pulseSamples, "tempSamples");
 
 			SortedMap<Integer, Integer> pulseByFrame = PulseDetector.instance.calcPulseFromSamples(pulseSamples, 10, 29);
