@@ -6,14 +6,16 @@ import idc.cv.emotiondetector.utillities.Optional;
 import idc.cv.emotiondetector.utillities.ParabolicLinearRegression;
 import idc.cv.emotiondetector.utillities.Utilities;
 import idc.cv.emotiondetector.utillities.VideoReader;
-import org.opencv.core.*;
+import org.opencv.core.Core;
+import org.opencv.core.Mat;
+import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.opencv.highgui.VideoCapture;
 
-import java.io.UnsupportedEncodingException;
 import java.util.Collection;
-import java.util.List;
 
-import static org.opencv.imgproc.Imgproc.*;
+import static org.opencv.imgproc.Imgproc.COLOR_RGB2GRAY;
+import static org.opencv.imgproc.Imgproc.cvtColor;
 
 public class Main
 {
@@ -22,8 +24,8 @@ public class Main
         // Load the native library.
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-        Mat neutralImage = Utilities.readImage("/nonSmile.jpg");
-        Mat smileImage = Utilities.readImage("/womanSmile.jpg");
+        Mat neutralImage = Utilities.readImage("/neutral2.png");
+        Mat smileImage = Utilities.readImage("/smile2.png");
 
         Rect neutralMouth = MouthDetectorImproved.instance.detectIn(neutralImage).get();
         Rect smilingMouth = MouthDetectorImproved.instance.detectIn(smileImage).get();
@@ -31,8 +33,8 @@ public class Main
         double[] neutralCurve = smileCurveOf(neutralImage, neutralMouth);
         double[] smileCurve = smileCurveOf(smileImage, smilingMouth);
 
-        Utilities.writeImageToFile("neutralResult.jpg", neutralImage);
-        Utilities.writeImageToFile("smileResult.jpg", smileImage);
+        Utilities.writeImageToFile("barNeutralResult.jpg", neutralImage);
+        Utilities.writeImageToFile("barSmileResult.jpg", smileImage);
 
         System.out.println("neutral coefficient: " + neutralCurve[1]);
         System.out.println("smile coefficient: " + smileCurve[1]);

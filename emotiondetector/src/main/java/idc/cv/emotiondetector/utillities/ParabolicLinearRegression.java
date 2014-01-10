@@ -47,7 +47,7 @@ public class ParabolicLinearRegression
         }
 
         regression.newSampleData(y, x);
-        System.out.println(Arrays.toString(regression.estimateRegressionParameters()));
+        //System.out.println(Arrays.toString(regression.estimateRegressionParameters()));
 
         return regression.estimateRegressionParameters();
     }

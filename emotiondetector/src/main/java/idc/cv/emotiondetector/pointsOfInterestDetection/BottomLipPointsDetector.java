@@ -12,11 +12,11 @@ import java.util.List;
 
 public class BottomLipPointsDetector
 {
-    private static final int colorDiffThreshold = 20;
+    private static final double colorDiffThreshold = -0.5;
 
     public static Collection<Point> findBottomLipPoints(Mat smileImage, Rect mouthRect)
     {
-        Point middleBottomLip = findLocalMinimum(smileImage, new Point(mouthRect.x + mouthRect.width / 2, mouthRect.y + mouthRect.height), mouthRect.height/3, mouthRect.height, mouthRect.height/2, colorDiffThreshold);
+        Point middleBottomLip = findLocalMinimum(smileImage, new Point(mouthRect.x + mouthRect.width / 2, mouthRect.y + mouthRect.height), mouthRect.height / 3, mouthRect.height, mouthRect.height / 2, colorDiffThreshold);
 
         //left points from middle:
         List<Point> lowerLipPoints = findLowerLipLeftPoints(middleBottomLip, mouthRect, smileImage);
@@ -54,39 +54,25 @@ public class BottomLipPointsDetector
         return lowerLipPoints;
     }
 
-    private static Point findLocalMinimum(Mat image, Point startPoint, int offset, int mouthHeight, int yCount, int colorDiffThreshold)
+    private static Point findLocalMinimum(Mat image, Point startPoint, int offset, int mouthHeight, int yCount, double colorDiffThreshold)
     {
-        for (int yAxisAdder = 0; yAxisAdder < yCount ; yAxisAdder++)
+        for (int yAxisAdder = 0; yAxisAdder < yCount; yAxisAdder++)
         {
-            System.out.println("Point: ["+((int) startPoint.x)+","+((int) startPoint.y + offset - yAxisAdder)+"], " + "color: " + image.get((int) startPoint.y + offset - yAxisAdder, (int) startPoint.x)[0]);
+            //System.out.println("Point: [" + ((int) startPoint.x) + "," + ((int) startPoint.y + offset - yAxisAdder) + "], " + "color: " + image.get((int) startPoint.y + offset - yAxisAdder, (int) startPoint.x)[0]);
 
             int imageX = (int) startPoint.x;
             int imageY = (int) startPoint.y + offset - yAxisAdder;
             double pixelColorValue = image.get(imageY, imageX)[0];
 
             double averageColorValue = averageOf(image, imageX, imageY, mouthHeight);
+            double standardDeviation = standardDeviationOf(image, imageX, imageY, mouthHeight);
 
-            if (averageColorValue - pixelColorValue > colorDiffThreshold)
+            if ((pixelColorValue - averageColorValue) / standardDeviation < colorDiffThreshold)
             {
+                //System.out.println((pixelColorValue - averageColorValue) / standardDeviation);
                 return new Point(startPoint.x, startPoint.y + offset - yAxisAdder);
             }
-
-            /*
-            boolean suspectedToBeLocalMinimum = true;
-
-            for (int y = 1; y <= mouthHeight && suspectedToBeLocalMinimum ; y++)
-            {
-                suspectedToBeLocalMinimum = image.get(imageY + y, imageX)[0] > pixelColorValue;
-            }
-
-            if (suspectedToBeLocalMinimum)
-            {
-                return new Point(startPoint.x, startPoint.y + offset - yAxisAdder);
-            }
-            */
         }
-
-        System.out.println();
         return startPoint;
     }
 
@@ -98,21 +84,24 @@ public class BottomLipPointsDetector
             summary += image.get(y, x)[0];
         }
 
-        return summary/amount;
+        return summary / amount;
     }
 
-    private static double medianOf(Mat image, int x, int startY, int amount)
+    private static double standardDeviationOf(Mat image, int x, int startY, int amount)
     {
-        double[] values = new double[amount];
-        int nextIndex = 0;
+        double average = averageOf(image, x, startY, amount);
+        double squaresSum = 0;
+
         for (int y = startY; y < startY + amount; y++)
         {
-            values[nextIndex++]= image.get(y, x)[0];
+            double colorValue = image.get(y, x)[0];
+            squaresSum += Math.pow(colorValue, 2);
         }
 
-        Arrays.sort(values);
-
-        return values[values.length/2];
+        return Math.sqrt
+                (
+                        (squaresSum - (amount * Math.pow(average, 2))) / (amount - 1)
+                );
     }
 
     private static Point normalizeByBase(Point point, Point base)

@@ -29,7 +29,7 @@ public enum VideoReader
 
         Mat newFrame = new Mat();
         int frameNumber = 1;
-        while (videoCapture.read(newFrame) && frameNumber < 100)
+        while (videoCapture.read(newFrame))
         {
             Optional<Rect> mouth = MouthDetectorImproved.instance.detectIn(newFrame);
             if (mouth.isPresent())
