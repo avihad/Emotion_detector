@@ -12,6 +12,7 @@ public class DetectedMovie
 {
 	private String				name;
 	private List<DetectedFrame>	frames;
+    private Integer             numOfFramesWithASmile;
 
 	public DetectedMovie() {
 		frames = new ArrayList<>();
@@ -39,4 +40,14 @@ public class DetectedMovie
 		return frames.add(frame);
 	}
 
+    public Integer getNumOfFramesWithASmile()
+    {
+        return numOfFramesWithASmile;
+    }
+
+    @XmlAttribute(required = true)
+    public void setNumOfFramesWithASmile(Integer numOfFramesWithASmile)
+    {
+        this.numOfFramesWithASmile = numOfFramesWithASmile;
+    }
 }
