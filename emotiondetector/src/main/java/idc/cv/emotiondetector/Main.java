@@ -124,20 +124,40 @@ public class Main
 
     private static void analyzeSamples() throws Exception
     {
-        Mat neutralImage = Utilities.readImage("/neutral2.png");
-        Mat smileImage = Utilities.readImage("/smile2.png");
+        Mat image1 = Utilities.readImage("/neutralInput.png");
+        Mat image2 = Utilities.readImage("/2.png");
+        Mat image3 = Utilities.readImage("/3.jpg");
+        Mat image4 = Utilities.readImage("/3a.jpg");
+        Mat image5 = Utilities.readImage("/4.jpg");
+        Mat image6 = Utilities.readImage("/5.jpg");
 
-        Rect neutralMouth = MouthDetectorImproved.instance.detectIn(neutralImage).get();
-        Rect smilingMouth = MouthDetectorImproved.instance.detectIn(smileImage).get();
+        Rect rect1 = MouthDetectorImproved.instance.detectIn(image1).get();
+        Rect rect2 = MouthDetectorImproved.instance.detectIn(image2).get();
+        Rect rect3 = MouthDetectorImproved.instance.detectIn(image3).get();
+        Rect rect4 = MouthDetectorImproved.instance.detectIn(image4).get();
+        Rect rect5 = MouthDetectorImproved.instance.detectIn(image5).get();
+        Rect rect6 = MouthDetectorImproved.instance.detectIn(image6).get();
 
-        double[] neutralCurve = smileCurveOf(neutralImage, neutralMouth);
-        double[] smileCurve = smileCurveOf(smileImage, smilingMouth);
+        double[] curve1 = smileCurveOf(image1, rect1);
+        double[] curve2 = smileCurveOf(image2, rect2);
+        double[] curve3 = smileCurveOf(image3, rect3);
+        double[] curve4 = smileCurveOf(image4, rect4);
+        double[] curve5 = smileCurveOf(image5, rect5);
+        double[] curve6 = smileCurveOf(image6, rect6);
 
-        Utilities.writeImageToFile("barNeutralResult.jpg", neutralImage);
-        Utilities.writeImageToFile("barSmileResult.jpg", smileImage);
+        Utilities.writeImageToFile("1Result.jpg", image1);
+        Utilities.writeImageToFile("2Result.jpg", image2);
+        Utilities.writeImageToFile("3Result.jpg", image3);
+        Utilities.writeImageToFile("4Result.jpg", image4);
+        Utilities.writeImageToFile("5Result.jpg", image5);
+        Utilities.writeImageToFile("6Result.jpg", image6);
 
-        System.out.println("neutral coefficient: " + neutralCurve[1]);
-        System.out.println("smile coefficient: " + smileCurve[1]);
+        System.out.println("1 coefficient: " + curve1[1]);
+        System.out.println("2 coefficient: " + curve2[1]);
+        System.out.println("3 coefficient: " + curve3[1]);
+        System.out.println("4 coefficient: " + curve4[1]);
+        System.out.println("5 coefficient: " + curve5[1]);
+        System.out.println("6 coefficient: " + curve6[1]);
     }
 
     private static double[] smileCurveOf(Mat smileImage, Rect mouth)
