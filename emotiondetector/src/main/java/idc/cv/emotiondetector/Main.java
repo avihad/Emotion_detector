@@ -60,7 +60,7 @@ public class Main
 		DetectedMovie movie = findSmilesAndGenerateXml(neutralImagePath, smileImagePath, movieFilePath, smileThreshold, neutralThreshold,
 				pulseByFrame);
 
-		Utilities.witeToXml(movie, "movieAnalysisResult.xml");
+		Utilities.witeToXml(movie, Main.outputPath + "movieAnalysisResult.xml");
 	}
 
 	private static DetectedMovie findSmilesAndGenerateXml(String neutralImagePath, String smileImagePath, String movieFilePath,
@@ -71,8 +71,8 @@ public class Main
 		Rect neutralMouth = MouthDetectorImproved.instance.detectIn(neutralImage).get();
 		Rect smilingMouth = MouthDetectorImproved.instance.detectIn(smileImage).get();
 
-		Utilities.writeImageToFile("neutralResult.jpg", neutralImage);
-		Utilities.writeImageToFile("smileResult.jpg", smileImage);
+		Utilities.writeImageToFile(Main.outputPath + "neutralResult.jpg", neutralImage);
+		Utilities.writeImageToFile(Main.outputPath + "smileResult.jpg", smileImage);
 
 		double neutralCurve = smileCurveOf(neutralImage, neutralMouth)[1];
 		double smileCurve = smileCurveOf(smileImage, smilingMouth)[1];
