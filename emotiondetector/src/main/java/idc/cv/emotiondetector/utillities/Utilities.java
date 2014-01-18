@@ -32,7 +32,7 @@ import org.opencv.highgui.Highgui;
 public class Utilities
 {
 	public static String readResource(String resourceName) {
-		String resource = Object.class.getResource(resourceName).getPath();
+		String resource = resourceName;
 
 		// this will replace %20 with spaces
 		if (resource.startsWith("/", 0)) {

@@ -25,7 +25,7 @@ set RDIR=.\target\classes\
 :: cv_sample2.mp4 video with ideal_filter
 set inFile=%1
 
-%f% %inFile% %RDIR% 25 color 50/60 60/60 50 ideal 1 6
+%f% %inFile% %RDIR% 25 color 60/60 100/60 50 ideal 1 6
 
 type NUL > finishMagnifierExe
 

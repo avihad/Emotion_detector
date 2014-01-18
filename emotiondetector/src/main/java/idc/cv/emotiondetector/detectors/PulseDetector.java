@@ -1,5 +1,6 @@
 package idc.cv.emotiondetector.detectors;
 
+import idc.cv.emotiondetector.Main;
 import idc.cv.emotiondetector.MovieMouthTracker;
 import idc.cv.emotiondetector.utillities.VideoReader;
 
@@ -28,6 +29,19 @@ public enum PulseDetector
 	 */
 	public SortedMap<Integer, double[][]> detectPulse(String movieFileName) throws Exception {
 
+		Map<Integer, Rect> mouthPositionsAlongMovie = MovieMouthTracker.getMouthPositionsAlongMovieWithIndices(movieFileName);
+		System.out.println("Finish mouth tracker run.");
+
+		return this.detectPulse(movieFileName, mouthPositionsAlongMovie);
+	}
+
+	/*
+	 * Execute Rubinshtain algorithm for magnifying the video colors and
+	 * calculate the difference between the color of the pixels in the movie
+	 * frames
+	 */
+	public SortedMap<Integer, double[][]> detectPulse(String movieFileName, Map<Integer, Rect> mouthPositionsAlongMovie) throws Exception {
+
 		// Call video magnifying algorithm
 		String magnifyMovieFileName = executeVideoMagnifyer(movieFileName);
 		System.out.println("Finish video magnifier run");
@@ -35,9 +49,6 @@ public enum PulseDetector
 		SortedMap<Integer, double[][]> frameSamples = new TreeMap<Integer, double[][]>();
 
 		VideoCapture videoAfterMagnifying = VideoReader.instance.open(magnifyMovieFileName);
-
-		Map<Integer, Rect> mouthPositionsAlongMovie = MovieMouthTracker.getMouthPositionsAlongMovieWithIndices(movieFileName);
-		System.out.println("Finish mouth tracker run.");
 
 		Mat frame = new Mat();
 		Integer index = 1;
@@ -181,21 +192,19 @@ public enum PulseDetector
 	private String executeVideoMagnifyer(String movieFileName) throws IOException, InterruptedException {
 
 		StringBuilder sb = new StringBuilder();
-		sb.append(movieFileName.substring(0, movieFileName.length() - 4));
+		sb.append(movieFileName.substring(Main.resourcePath.length() - 1, movieFileName.length() - 4));
 		sb.append("-ideal-from-0.83333-to-1-alpha-50-level-6-chromAtn-1.avi");
 		String outputFileName = sb.toString();
 
 		if (Object.class.getResource(outputFileName) == null) {
 
-			String relativePath = ".\\target\\classes\\";
-			String commandAndArgs = new String("cmd /c start " + relativePath + "VideoMagnification\\videoMagnifier.bat " + relativePath
-					+ movieFileName);
+			String commandAndArgs = new String("cmd /c start " + Main.resourcePath + "\\VideoMagnification\\videoMagnifier.bat " + movieFileName);
 
 			// Executing VideoMagnification , after the execution finish it
 			// create a new file called finishMagnifierExe
 			Runtime.getRuntime().exec(commandAndArgs);
 
-			File f = new File("finishMagnifierExe");
+			File f = new File(Main.outputPath + "finishMagnifierExe");
 
 			while (!f.exists()) {
 				Thread.sleep(2000);
@@ -204,6 +213,6 @@ public enum PulseDetector
 			f.delete();
 		}
 
-		return outputFileName;
+		return Main.outputPath + outputFileName;
 	}
 }

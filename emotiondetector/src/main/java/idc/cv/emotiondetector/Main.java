@@ -1,157 +1,169 @@
 package idc.cv.emotiondetector;
 
+import static org.opencv.imgproc.Imgproc.COLOR_RGB2GRAY;
+import static org.opencv.imgproc.Imgproc.cvtColor;
 import idc.cv.emotiondetector.detectors.MouthDetectorImproved;
-import idc.cv.emotiondetector.entities.*;
+import idc.cv.emotiondetector.entities.DetectedFrame;
+import idc.cv.emotiondetector.entities.DetectedMouth;
+import idc.cv.emotiondetector.entities.DetectedMovie;
 import idc.cv.emotiondetector.pointsOfInterestDetection.BottomLipPointsDetector;
 import idc.cv.emotiondetector.utillities.Optional;
 import idc.cv.emotiondetector.utillities.ParabolicLinearRegression;
 import idc.cv.emotiondetector.utillities.Utilities;
 import idc.cv.emotiondetector.utillities.VideoReader;
+
+import java.util.Collection;
+import java.util.SortedMap;
+
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.highgui.VideoCapture;
 
-import java.util.Collection;
-import java.util.SortedMap;
-
-import static org.opencv.imgproc.Imgproc.COLOR_RGB2GRAY;
-import static org.opencv.imgproc.Imgproc.cvtColor;
-
 public class Main
 {
-    public static void main(String[] args) throws Exception
-    {
-        // Load the native library.
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-        //analyzeSamples();
+	public static final String	resourcePath	= System.getenv("resourcePath");
+	public static final String	outputPath		= System.getenv("outputPath");
+	public static final String	cascadePath		= Main.resourcePath + "\\cascades\\";
 
-        //VideoReader.instance.storeAsFrames("/1.avi");
+	public static void main(String[] args) throws Exception {
 
-        analyzeMovie("/neutralInput.png", "/smileInput.png", "/1.avi", 0.002, 0.001);
-    }
+		if (args.length != 5) {
+			System.out.println("USAGE: not enough parametes (require 5 got " + args.length + ")");
+			System.exit(-1);
+		}
+		String naturalInput = resourcePath + args[0];
+		String smileInput = resourcePath + args[1];
+		String movieName = resourcePath + args[2];
+		// 0.002
+		Double smileThreshold = Double.valueOf(args[3]);
+		// 0.001
+		Double naturalThreshold = Double.valueOf(args[4]);
 
-    private static void analyzeMovie(String neutralImagePath, String smileImagePath, String movieFilePath, double smileThreshold, double neutralThreshold) throws Exception
-    {
-        //Run the pulse application:
-        SortedMap<Integer,Integer> pulseByFrame = PulseDetectorMain.detectPulse(movieFilePath);
+		// Load the native library.
+		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-        DetectedMovie movie = findSmilesAndGenerateXml(neutralImagePath, smileImagePath, movieFilePath, smileThreshold, neutralThreshold, pulseByFrame);
+		// analyzeSamples();
 
-        Utilities.witeToXml(movie, "movieAnalysisResult.xml");
-    }
+		// VideoReader.instance.storeAsFrames("/1.avi");
 
-    private static DetectedMovie findSmilesAndGenerateXml(String neutralImagePath, String smileImagePath, String movieFilePath, double smileThreshold, double neutralThreshold, SortedMap<Integer, Integer> pulseByFrame) throws Exception
-    {
-        Mat neutralImage = Utilities.readImage(neutralImagePath);
-        Mat smileImage = Utilities.readImage(smileImagePath);
+		analyzeMovie(naturalInput, smileInput, movieName, smileThreshold, naturalThreshold);
+	}
 
-        Rect neutralMouth = MouthDetectorImproved.instance.detectIn(neutralImage).get();
-        Rect smilingMouth = MouthDetectorImproved.instance.detectIn(smileImage).get();
+	private static void analyzeMovie(String neutralImagePath, String smileImagePath, String movieFilePath, double smileThreshold,
+			double neutralThreshold) throws Exception {
+		// Run the pulse application:
+		SortedMap<Integer, Integer> pulseByFrame = PulseDetectorMain.detectPulse(movieFilePath);
 
-        Utilities.writeImageToFile("neutralResult.jpg", neutralImage);
-        Utilities.writeImageToFile("smileResult.jpg", smileImage);
+		DetectedMovie movie = findSmilesAndGenerateXml(neutralImagePath, smileImagePath, movieFilePath, smileThreshold, neutralThreshold,
+				pulseByFrame);
 
-        double neutralCurve = smileCurveOf(neutralImage, neutralMouth)[1];
-        double smileCurve = smileCurveOf(smileImage, smilingMouth)[1];
+		Utilities.witeToXml(movie, outputPath + "\\movieAnalysisResult.xml");
+	}
 
-        System.out.println("neutral curve: " + neutralCurve);
-        System.out.println("smile curve: " + smileCurve);
+	private static DetectedMovie findSmilesAndGenerateXml(String neutralImagePath, String smileImagePath, String movieFilePath,
+			double smileThreshold, double neutralThreshold, SortedMap<Integer, Integer> pulseByFrame) throws Exception {
+		Mat neutralImage = Utilities.readImage(neutralImagePath);
+		Mat smileImage = Utilities.readImage(smileImagePath);
 
-        Mat movieFrame = new Mat();
-        VideoCapture videoCapture = VideoReader.instance.open(movieFilePath);
-        int frameNumber = 1;
+		Rect neutralMouth = MouthDetectorImproved.instance.detectIn(neutralImage).get();
+		Rect smilingMouth = MouthDetectorImproved.instance.detectIn(smileImage).get();
 
-        int numOfFramesOfSmile = 0;
-        int numOfFramesOfMouthMovement = 0;
+		Utilities.writeImageToFile(Main.outputPath + "neutralResult.jpg", neutralImage);
+		Utilities.writeImageToFile(Main.outputPath + "smileResult.jpg", smileImage);
 
-        DetectedMovie movie = new DetectedMovie();
-        movie.setName(movieFilePath);
+		double neutralCurve = smileCurveOf(neutralImage, neutralMouth)[1];
+		double smileCurve = smileCurveOf(smileImage, smilingMouth)[1];
 
+		System.out.println("neutral curve: " + neutralCurve);
+		System.out.println("smile curve: " + smileCurve);
 
-        while (videoCapture.read(movieFrame))
-        {
-            DetectedFrame detectedFrame = new DetectedFrame();
-            detectedFrame.setFrameNumber(frameNumber);
-            detectedFrame.setPulse(pulseByFrame.get(frameNumber));
+		Mat movieFrame = new Mat();
+		VideoCapture videoCapture = VideoReader.instance.open(movieFilePath);
+		int frameNumber = 1;
 
-            Optional<Rect> optionalMouth = MouthDetectorImproved.instance.detectIn(movieFrame);
+		int numOfFramesOfSmile = 0;
+		int numOfFramesOfMouthMovement = 0;
 
-            if (optionalMouth.isPresent())
-            {
-                DetectedMouth detectedMouth;
+		DetectedMovie movie = new DetectedMovie();
+		movie.setName(movieFilePath);
 
-                Rect mouth = optionalMouth.get();
-                double mouthCurve = smileCurveOf(movieFrame, mouth)[1];
+		while (videoCapture.read(movieFrame)) {
+			DetectedFrame detectedFrame = new DetectedFrame();
+			detectedFrame.setFrameNumber(frameNumber);
+			detectedFrame.setPulse(pulseByFrame.get(frameNumber));
 
-                if (mouthCurve >= smileCurve || smileCurve - mouthCurve <= smileThreshold)
-                {
-                    System.out.println("Smile is detected at frame number: "+frameNumber);
-                    numOfFramesOfSmile++;
+			Optional<Rect> optionalMouth = MouthDetectorImproved.instance.detectIn(movieFrame);
 
-                    detectedMouth = new DetectedMouth(mouth, Boolean.TRUE);
-                }
-                else
-                {
-                    detectedMouth = new DetectedMouth(mouth, Boolean.FALSE);
+			if (optionalMouth.isPresent()) {
+				DetectedMouth detectedMouth;
 
-                    if (mouthCurve > ((neutralCurve + smileCurve) / 3) + neutralThreshold)
-                    {
-                        System.out.println("Mouth movement is detected at frame number: "+frameNumber);
-                        numOfFramesOfMouthMovement++;
-                    }
-                }
+				Rect mouth = optionalMouth.get();
+				double mouthCurve = smileCurveOf(movieFrame, mouth)[1];
 
-                detectedFrame.addDetectedPart(detectedMouth);
-            }
-            frameNumber++;
-            movie.addFrame(detectedFrame);
+				if (mouthCurve >= smileCurve || smileCurve - mouthCurve <= smileThreshold) {
+					System.out.println("Smile is detected at frame number: " + frameNumber);
+					numOfFramesOfSmile++;
 
-            if (frameNumber % 50 == 0)
-            {
-                System.out.println("Passed: " + frameNumber + " frames");
-            }
-        }
+					detectedMouth = new DetectedMouth(mouth, Boolean.TRUE);
+				} else {
+					detectedMouth = new DetectedMouth(mouth, Boolean.FALSE);
 
-        System.out.println("Number of frames with a smile: " + numOfFramesOfSmile);
-        System.out.println("Number of frames with mouth movement: " + numOfFramesOfMouthMovement);
-        movie.setNumOfFramesWithASmile(numOfFramesOfSmile);
+					if (mouthCurve > ((neutralCurve + smileCurve) / 3) + neutralThreshold) {
+						System.out.println("Mouth movement is detected at frame number: " + frameNumber);
+						numOfFramesOfMouthMovement++;
+					}
+				}
 
-        return movie;
-    }
+				detectedFrame.addDetectedPart(detectedMouth);
+			}
+			frameNumber++;
+			movie.addFrame(detectedFrame);
 
-    private static void analyzeSamples() throws Exception
-    {
-        Mat neutralImage = Utilities.readImage("/neutral2.png");
-        Mat smileImage = Utilities.readImage("/smile2.png");
+			if (frameNumber % 50 == 0) {
+				System.out.println("Passed: " + frameNumber + " frames");
+			}
+		}
 
-        Rect neutralMouth = MouthDetectorImproved.instance.detectIn(neutralImage).get();
-        Rect smilingMouth = MouthDetectorImproved.instance.detectIn(smileImage).get();
+		System.out.println("Number of frames with a smile: " + numOfFramesOfSmile);
+		System.out.println("Number of frames with mouth movement: " + numOfFramesOfMouthMovement);
+		movie.setNumOfFramesWithASmile(numOfFramesOfSmile);
 
-        double[] neutralCurve = smileCurveOf(neutralImage, neutralMouth);
-        double[] smileCurve = smileCurveOf(smileImage, smilingMouth);
+		return movie;
+	}
 
-        Utilities.writeImageToFile("barNeutralResult.jpg", neutralImage);
-        Utilities.writeImageToFile("barSmileResult.jpg", smileImage);
+	private static void analyzeSamples() throws Exception {
+		Mat neutralImage = Utilities.readImage("/neutral2.png");
+		Mat smileImage = Utilities.readImage("/smile2.png");
 
-        System.out.println("neutral coefficient: " + neutralCurve[1]);
-        System.out.println("smile coefficient: " + smileCurve[1]);
-    }
+		Rect neutralMouth = MouthDetectorImproved.instance.detectIn(neutralImage).get();
+		Rect smilingMouth = MouthDetectorImproved.instance.detectIn(smileImage).get();
 
-    private static double[] smileCurveOf(Mat smileImage, Rect mouth)
-    {
-        cvtColor(smileImage, smileImage, COLOR_RGB2GRAY);
+		double[] neutralCurve = smileCurveOf(neutralImage, neutralMouth);
+		double[] smileCurve = smileCurveOf(smileImage, smilingMouth);
 
-        //GaussianBlur(smileImage, smileImage, new Size(3, 3), 0, 0, BORDER_DEFAULT);
+		Utilities.writeImageToFile(Main.outputPath + "barNeutralResult.jpg", neutralImage);
+		Utilities.writeImageToFile(Main.outputPath + "barSmileResult.jpg", smileImage);
 
-        Collection<Point> lowerLipPoints = BottomLipPointsDetector.findBottomLipPoints(smileImage, mouth);
+		System.out.println("neutral coefficient: " + neutralCurve[1]);
+		System.out.println("smile coefficient: " + smileCurve[1]);
+	}
 
-        double[] parabolaCoefficients = ParabolicLinearRegression.linearRegressionOf(lowerLipPoints);
+	private static double[] smileCurveOf(Mat smileImage, Rect mouth) {
+		cvtColor(smileImage, smileImage, COLOR_RGB2GRAY);
 
-        //ParabolicLinearRegression.testResult(lowerLipPoints, parabolaCoefficients);
+		// GaussianBlur(smileImage, smileImage, new Size(3, 3), 0, 0,
+		// BORDER_DEFAULT);
 
-        return parabolaCoefficients;
-    }
+		Collection<Point> lowerLipPoints = BottomLipPointsDetector.findBottomLipPoints(smileImage, mouth);
+
+		double[] parabolaCoefficients = ParabolicLinearRegression.linearRegressionOf(lowerLipPoints);
+
+		// ParabolicLinearRegression.testResult(lowerLipPoints,
+		// parabolaCoefficients);
+
+		return parabolaCoefficients;
+	}
 }

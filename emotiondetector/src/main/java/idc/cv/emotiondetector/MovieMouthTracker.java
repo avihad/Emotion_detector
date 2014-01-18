@@ -52,7 +52,7 @@ public enum MovieMouthTracker
 				mouthsAlongMovie.put(index, optionalMouth.get());
 				Utilities.drawRect(optionalMouth.get(), frame);
 			}
-			Utilities.writeImageToFile("cannyFrame" + index + ".png", frame);
+			Utilities.writeImageToFile(Main.outputPath + "cannyFrame" + index + ".png", frame);
 
 			frame = new Mat();
 			index++;
