@@ -1,11 +1,13 @@
 package idc.cv.emotiondetector.utillities;
 
+import idc.cv.emotiondetector.Main;
 import idc.cv.emotiondetector.entities.DetectedEyePair;
 import idc.cv.emotiondetector.entities.DetectedFace;
 import idc.cv.emotiondetector.entities.DetectedFrame;
 import idc.cv.emotiondetector.entities.DetectedMouth;
 import idc.cv.emotiondetector.entities.DetectedMovie;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -16,7 +18,9 @@ import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.List;
 import java.util.SortedMap;
+import java.util.concurrent.TimeUnit;
 
+import javax.imageio.ImageIO;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
@@ -28,6 +32,10 @@ import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
 import org.opencv.highgui.Highgui;
+
+import com.xuggle.mediatool.IMediaWriter;
+import com.xuggle.mediatool.ToolFactory;
+import com.xuggle.xuggler.ICodec;
 
 public class Utilities
 {
@@ -169,4 +177,37 @@ public class Utilities
 
 	}
 
+	/**
+	 * Creating a movie from a png picture sequence with custom frame rate
+	 * 
+	 * @param outputMovieName
+	 * @param picSequenceName
+	 * @param numberOfFrames
+	 * @param frameRate
+	 * @throws IOException
+	 * */
+	public static void createMovieFromPics(final String outputMovieName, String picSequenceName, int numberOfFrames, int frameRate)
+			throws IOException {
+		System.out.println("Writing picture sequence: " + picSequenceName + " to a movie named: " + outputMovieName);
+
+		IMediaWriter writer = ToolFactory.makeWriter(Main.outputPath + outputMovieName);
+		BufferedImage image = ImageIO.read(new File(Main.outputPath + picSequenceName + 1 + ".png"));
+		try {
+			writer.addVideoStream(0, 0, ICodec.ID.CODEC_ID_MPEG4, image.getWidth(), image.getHeight());
+
+			long timePerFrame = 1000 / frameRate;
+			for (int i = 1; i < numberOfFrames; i++) {
+				image = ImageIO.read(new File(Main.outputPath + picSequenceName + (i + 1) + ".png"));
+				writer.encodeVideo(0, image, timePerFrame * i, TimeUnit.MILLISECONDS);
+			}
+		} finally {
+			writer.close();
+			System.out.println("Finish writing the movie: " + outputMovieName);
+		}
+
+	}
+
+	public static void main(String[] args) throws IOException {
+		createMovieFromPics("outputMovie.avi", "cannyFrame", 250, 29);
+	}
 }
