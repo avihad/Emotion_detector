@@ -1,35 +1,28 @@
 package idc.cv.emotiondetector;
 
-import static org.opencv.imgproc.Imgproc.COLOR_RGB2GRAY;
-import static org.opencv.imgproc.Imgproc.cvtColor;
 import idc.cv.emotiondetector.detectors.MouthDetectorImproved;
 import idc.cv.emotiondetector.entities.DetectedFrame;
 import idc.cv.emotiondetector.entities.DetectedMouth;
 import idc.cv.emotiondetector.entities.DetectedMovie;
-import idc.cv.emotiondetector.pointsOfInterestDetection.BottomLipPointsDetector;
+import idc.cv.emotiondetector.smileDetection.SmileCurveFinder;
 import idc.cv.emotiondetector.utillities.Optional;
-import idc.cv.emotiondetector.utillities.ParabolicLinearRegression;
 import idc.cv.emotiondetector.utillities.Utilities;
 import idc.cv.emotiondetector.utillities.VideoReader;
-
-import java.util.Collection;
-import java.util.SortedMap;
-
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
-import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.highgui.VideoCapture;
 
+import java.util.SortedMap;
+
 public class Main
 {
-
 	public static final String	resourcePath	= System.getenv("resourcePath");
 	public static final String	outputPath		= System.getenv("outputPath");
 	public static final String	cascadePath		= Main.resourcePath + "\\cascades\\";
 
-	public static void main(String[] args) throws Exception {
-
+	public static void main(String[] args) throws Exception
+    {
 		if (args.length != 5) {
 			System.out.println("USAGE: not enough parametes (require 5 got " + args.length + ")");
 			System.exit(-1);
@@ -74,8 +67,8 @@ public class Main
 		Utilities.writeImageToFile(Main.outputPath + "neutralResult.jpg", neutralImage);
 		Utilities.writeImageToFile(Main.outputPath + "smileResult.jpg", smileImage);
 
-		double neutralCurve = smileCurveOf(neutralImage, neutralMouth)[1];
-		double smileCurve = smileCurveOf(smileImage, smilingMouth)[1];
+		double neutralCurve = SmileCurveFinder.smileCurveOf(neutralImage, neutralMouth)[1];
+		double smileCurve = SmileCurveFinder.smileCurveOf(smileImage, smilingMouth)[1];
 
 		System.out.println("neutral curve: " + neutralCurve);
 		System.out.println("smile curve: " + smileCurve);
@@ -101,7 +94,7 @@ public class Main
 				DetectedMouth detectedMouth;
 
 				Rect mouth = optionalMouth.get();
-				double mouthCurve = smileCurveOf(movieFrame, mouth)[1];
+				double mouthCurve = SmileCurveFinder.smileCurveOf(movieFrame, mouth)[1];
 
 				if (mouthCurve >= smileCurve || smileCurve - mouthCurve <= smileThreshold) {
 					System.out.println("Smile is detected at frame number: " + frameNumber);
@@ -133,58 +126,4 @@ public class Main
 
 		return movie;
 	}
-
-	private static double[] smileCurveOf(Mat smileImage, Rect mouth) {
-		cvtColor(smileImage, smileImage, COLOR_RGB2GRAY);
-
-		// GaussianBlur(smileImage, smileImage, new Size(3, 3), 0, 0,
-		// BORDER_DEFAULT);
-
-		Collection<Point> lowerLipPoints = BottomLipPointsDetector.findBottomLipPoints(smileImage, mouth);
-
-		double[] parabolaCoefficients = ParabolicLinearRegression.linearRegressionOf(lowerLipPoints);
-
-		// ParabolicLinearRegression.testResult(lowerLipPoints,
-		// parabolaCoefficients);
-
-		return parabolaCoefficients;
-	}
-
-	private static void analyzeSamples() throws Exception {
-		Mat image1 = Utilities.readImage("/neutralInput.png");
-		Mat image2 = Utilities.readImage("/2.png");
-		Mat image3 = Utilities.readImage("/3.jpg");
-		Mat image4 = Utilities.readImage("/3a.jpg");
-		Mat image5 = Utilities.readImage("/4.jpg");
-		Mat image6 = Utilities.readImage("/5.jpg");
-
-		Rect rect1 = MouthDetectorImproved.instance.detectIn(image1).get();
-		Rect rect2 = MouthDetectorImproved.instance.detectIn(image2).get();
-		Rect rect3 = MouthDetectorImproved.instance.detectIn(image3).get();
-		Rect rect4 = MouthDetectorImproved.instance.detectIn(image4).get();
-		Rect rect5 = MouthDetectorImproved.instance.detectIn(image5).get();
-		Rect rect6 = MouthDetectorImproved.instance.detectIn(image6).get();
-
-		double[] curve1 = smileCurveOf(image1, rect1);
-		double[] curve2 = smileCurveOf(image2, rect2);
-		double[] curve3 = smileCurveOf(image3, rect3);
-		double[] curve4 = smileCurveOf(image4, rect4);
-		double[] curve5 = smileCurveOf(image5, rect5);
-		double[] curve6 = smileCurveOf(image6, rect6);
-
-		Utilities.writeImageToFile("1Result.jpg", image1);
-		Utilities.writeImageToFile("2Result.jpg", image2);
-		Utilities.writeImageToFile("3Result.jpg", image3);
-		Utilities.writeImageToFile("4Result.jpg", image4);
-		Utilities.writeImageToFile("5Result.jpg", image5);
-		Utilities.writeImageToFile("6Result.jpg", image6);
-
-		System.out.println("1 coefficient: " + curve1[1]);
-		System.out.println("2 coefficient: " + curve2[1]);
-		System.out.println("3 coefficient: " + curve3[1]);
-		System.out.println("4 coefficient: " + curve4[1]);
-		System.out.println("5 coefficient: " + curve5[1]);
-		System.out.println("6 coefficient: " + curve6[1]);
-	}
-
 }
