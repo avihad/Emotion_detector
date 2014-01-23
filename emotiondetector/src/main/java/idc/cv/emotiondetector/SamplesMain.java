@@ -1,3 +1,5 @@
+package idc.cv.emotiondetector;
+
 import idc.cv.emotiondetector.detectors.MouthDetectorImproved;
 import idc.cv.emotiondetector.smileDetection.SmileCurveFinder;
 import idc.cv.emotiondetector.utillities.Utilities;

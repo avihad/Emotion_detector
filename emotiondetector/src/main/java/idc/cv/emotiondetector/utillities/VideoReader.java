@@ -1,6 +1,8 @@
 package idc.cv.emotiondetector.utillities;
 
+import idc.cv.emotiondetector.Main;
 import idc.cv.emotiondetector.detectors.MouthDetectorImproved;
+import idc.cv.emotiondetector.smileDetection.SmileCurveFinder;
 import org.opencv.core.Mat;
 import org.opencv.core.Rect;
 import org.opencv.highgui.VideoCapture;
@@ -34,7 +36,7 @@ public enum VideoReader
             Optional<Rect> mouth = MouthDetectorImproved.instance.detectIn(newFrame);
             if (mouth.isPresent())
             {
-                Utilities.drawRect(mouth.get(), newFrame);
+                SmileCurveFinder.smileCurveOf(newFrame, mouth.get());
             }
 
             Utilities.writeImageToFile("frame"+frameNumber+".png", newFrame);

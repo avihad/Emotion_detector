@@ -38,10 +38,6 @@ public class Main
 		// Load the native library.
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-		// analyzeSamples();
-
-		// VideoReader.instance.storeAsFrames("/1.avi");
-
 		analyzeMovie(naturalInput, smileInput, movieName, smileThreshold, naturalThreshold);
 	}
 
