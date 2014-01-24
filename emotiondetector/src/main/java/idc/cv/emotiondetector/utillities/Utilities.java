@@ -7,6 +7,8 @@ import idc.cv.emotiondetector.entities.DetectedFrame;
 import idc.cv.emotiondetector.entities.DetectedMouth;
 import idc.cv.emotiondetector.entities.DetectedMovie;
 
+import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
@@ -198,6 +200,48 @@ public class Utilities
 			long timePerFrame = 1000 / frameRate;
 			for (int i = 1; i < numberOfFrames; i++) {
 				image = ImageIO.read(new File(Main.outputPath + picSequenceName + (i + 1) + ".png"));
+				writer.encodeVideo(0, image, timePerFrame * i, TimeUnit.MILLISECONDS);
+			}
+		} finally {
+			writer.close();
+			System.out.println("Finish writing the movie: " + outputMovieName);
+		}
+
+	}
+
+	/**
+	 * Creating a movie from a png picture sequence with custom frame rate
+	 * 
+	 * @param outputMovieName
+	 * @param picSequenceName
+	 * @param numberOfFrames
+	 * @param frameRate
+	 * @throws IOException
+	 * */
+	public static void createMovieFromPicsWithPulse(final String outputMovieName, String picSequenceName, SortedMap<Integer, Integer> detectPulse,
+			int numberOfFrames, int frameRate) throws IOException {
+		System.out.println("Writing picture sequence: " + picSequenceName + " to a movie named: " + outputMovieName);
+
+		IMediaWriter writer = ToolFactory.makeWriter(Main.outputPath + outputMovieName);
+		BufferedImage image = ImageIO.read(new File(Main.outputPath + picSequenceName + 1 + ".png"));
+		Integer lastPulse = detectPulse.get(detectPulse.firstKey());
+		try {
+			writer.addVideoStream(0, 0, ICodec.ID.CODEC_ID_MPEG4, image.getWidth(), image.getHeight());
+
+			long timePerFrame = 1000 / frameRate;
+			for (int i = 1; i < numberOfFrames; i++) {
+				Integer framePulse = detectPulse.get(i);
+				if (framePulse == null) {
+					framePulse = lastPulse;
+				}
+				lastPulse = framePulse;
+
+				image = ImageIO.read(new File(Main.outputPath + picSequenceName + (i + 1) + ".png"));
+				Graphics imageGraphics = image.getGraphics();
+				imageGraphics.setFont(imageGraphics.getFont().deriveFont(30f));
+				imageGraphics.setColor(Color.BLACK);
+				imageGraphics.drawString("Pulse: " + framePulse, (int) (image.getWidth() * 0.1), (int) (image.getHeight() * 0.1));
+				imageGraphics.dispose();
 				writer.encodeVideo(0, image, timePerFrame * i, TimeUnit.MILLISECONDS);
 			}
 		} finally {

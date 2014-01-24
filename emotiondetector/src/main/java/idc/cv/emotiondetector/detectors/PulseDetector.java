@@ -27,9 +27,10 @@ public enum PulseDetector
 	 * calculate the difference between the color of the pixels in the movie
 	 * frames
 	 */
-	public SortedMap<Integer, double[][]> detectPulse(String movieFileName) throws Exception {
+	public SortedMap<Integer, double[][]> detectPulse(String movieFileName, int samplePositionChangeRate) throws Exception {
 
-		Map<Integer, Rect> mouthPositionsAlongMovie = MovieMouthTracker.getMouthPositionsAlongMovieWithIndices(movieFileName);
+		Map<Integer, Rect> mouthPositionsAlongMovie = MovieMouthTracker.getMouthPositionsSelectivlyWithIndices(movieFileName,
+				samplePositionChangeRate);
 		System.out.println("Finish mouth tracker run.");
 
 		return this.detectPulse(movieFileName, mouthPositionsAlongMovie);
@@ -193,7 +194,7 @@ public enum PulseDetector
 
 		StringBuilder sb = new StringBuilder();
 		sb.append(movieFileName.substring(Main.resourcePath.length() - 1, movieFileName.length() - 4));
-		sb.append("-ideal-from-0.83333-to-1-alpha-50-level-6-chromAtn-1.avi");
+		sb.append("-ideal-from-1-to-1.6667-alpha-50-level-6-chromAtn-1.avi");
 		String outputFileName = sb.toString();
 
 		if (Object.class.getResource(outputFileName) == null) {

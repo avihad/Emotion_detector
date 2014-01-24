@@ -16,43 +16,38 @@ public enum MovieMouthTracker
 {
 	instance;
 
-	public static Map<Integer, Rect> getMouthPositionsAlongMovieWithIndices(String movieFileName) throws Exception {
+	public static Map<Integer, Rect> getMouthPositionsSelectivlyWithIndices(String movieFileName, int selectiveRate) throws Exception {
 		VideoCapture videoCapture = VideoReader.instance.open(movieFileName);
-		return getMouthPositionsAlongMovie(videoCapture);
+		return getMouthPositionSelectivly(videoCapture, selectiveRate);
 	}
 
 	/*
 	 * calculate mouth position in each frame and return a map of the detected
 	 * mouth indexed by frame number
 	 */
-	public static Map<Integer, Rect> getMouthPositionsAlongMovie(VideoCapture videoCapture) throws Exception {
+	public static Map<Integer, Rect> getMouthPositionsAlongMovieWithIndices(String movieFileName) throws Exception {
+		VideoCapture videoCapture = VideoReader.instance.open(movieFileName);
+		return getMouthPositionSelectivly(videoCapture, 0);
+	}
+
+	private static Map<Integer, Rect> getMouthPositionSelectivly(VideoCapture videoCapture, int selectiveRate) throws Exception {
 		Mat edges = new Mat();
 		Mat frame = new Mat();
 
 		Integer index = 1;
 		Map<Integer, Rect> mouthsAlongMovie = new HashMap<Integer, Rect>();
+		Optional<Rect> lastDetected = Optional.absent();
+
 		while (videoCapture.read(frame)) {
-			Optional<Rect> optionalMouth = MouthDetectorImproved.instance.detectIn(frame);
-			/* Rect mouth = optionalMouth.get();
-			for (int row = 0; row < frame.size().height; row++)
-			{
-			    for (int column = 0; column < frame.size().width; column++)
-			    {
-			        if ()
-			    }
+			Optional<Rect> optionalMouth = lastDetected;
+			if (!optionalMouth.isPresent() || ((index - 1) % selectiveRate) == 0) {
+				optionalMouth = MouthDetectorImproved.instance.detectIn(frame);
 			}
-			cvtColor(frame, frame, COLOR_RGB2GRAY);
-
-			GaussianBlur(frame, frame, new Size(7, 7), 1.5, 1.5);
-
-			Canny(frame, frame, 0, 30);
-			    */
 
 			if (optionalMouth.isPresent()) {
 				mouthsAlongMovie.put(index, optionalMouth.get());
 				Utilities.drawRect(optionalMouth.get(), frame);
 			}
-			Utilities.writeImageToFile(Main.outputPath + "cannyFrame" + index + ".png", frame);
 
 			frame = new Mat();
 			index++;

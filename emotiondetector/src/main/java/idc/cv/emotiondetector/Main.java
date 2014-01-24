@@ -8,12 +8,13 @@ import idc.cv.emotiondetector.smileDetection.SmileCurveFinder;
 import idc.cv.emotiondetector.utillities.Optional;
 import idc.cv.emotiondetector.utillities.Utilities;
 import idc.cv.emotiondetector.utillities.VideoReader;
+
+import java.util.SortedMap;
+
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Rect;
 import org.opencv.highgui.VideoCapture;
-
-import java.util.SortedMap;
 
 public class Main
 {
@@ -21,8 +22,7 @@ public class Main
 	public static final String	outputPath		= System.getenv("outputPath");
 	public static final String	cascadePath		= Main.resourcePath + "\\cascades\\";
 
-	public static void main(String[] args) throws Exception
-    {
+	public static void main(String[] args) throws Exception {
 		if (args.length != 5) {
 			System.out.println("USAGE: not enough parametes (require 5 got " + args.length + ")");
 			System.exit(-1);
@@ -44,7 +44,7 @@ public class Main
 	private static void analyzeMovie(String neutralImagePath, String smileImagePath, String movieFilePath, double smileThreshold,
 			double neutralThreshold) throws Exception {
 		// Run the pulse application:
-		SortedMap<Integer, Integer> pulseByFrame = PulseDetectorMain.detectPulse(movieFilePath);
+		SortedMap<Integer, Integer> pulseByFrame = PulseDetectorMain.detectPulse(movieFilePath, 10);
 
 		DetectedMovie movie = findSmilesAndGenerateXml(neutralImagePath, smileImagePath, movieFilePath, smileThreshold, neutralThreshold,
 				pulseByFrame);
