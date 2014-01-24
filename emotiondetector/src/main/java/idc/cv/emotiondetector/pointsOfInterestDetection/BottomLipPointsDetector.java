@@ -1,23 +1,31 @@
 package idc.cv.emotiondetector.pointsOfInterestDetection;
 
-import idc.cv.emotiondetector.utillities.Utilities;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.core.Rect;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
 
 public class BottomLipPointsDetector
 {
     private static final double colorDiffThreshold = -0.5;
 
-    public static Collection<Point> findBottomLipPoints(Mat smileImage, Rect mouthRect)
+    public static Point findMiddleBottomLip(Mat smileImage, Rect mouthRect)
     {
-        Point middleBottomLip = findLocalMinimum(smileImage, new Point(mouthRect.x + mouthRect.width / 2, mouthRect.y + mouthRect.height), mouthRect.height / 3, mouthRect.height, mouthRect.height / 2, colorDiffThreshold);
+        return findLocalMinimum
+                (
+                        smileImage,
+                        new Point(mouthRect.x + mouthRect.width / 2, mouthRect.y + mouthRect.height),
+                        mouthRect.height / 3,
+                        mouthRect.height,
+                        mouthRect.height / 2,
+                        colorDiffThreshold
+                );
+    }
 
+    public static List<Point> findBottomLipPoints(Mat smileImage, Rect mouthRect, Point middleBottomLip)
+    {
         //left points from middle:
         List<Point> lowerLipPoints = findLowerLipLeftPoints(middleBottomLip, mouthRect, smileImage);
         //middle point
@@ -25,9 +33,22 @@ public class BottomLipPointsDetector
         //right points from middle
         lowerLipPoints.addAll(findLowerLipRightPoints(middleBottomLip, mouthRect, smileImage));
 
-        Utilities.drawCollectionLineOf(smileImage, lowerLipPoints);
+        return filterIrrelevantPoints(lowerLipPoints, middleBottomLip);
+    }
 
-        return normalizeCollectionByBase(lowerLipPoints, middleBottomLip);
+    private static List<Point> filterIrrelevantPoints(List<Point> lipPoints, Point middleBottomLip)
+    {
+        List<Point> filtered = new ArrayList<>();
+
+        for (Point lipPoint : lipPoints)
+        {
+            if (lipPoint.y < middleBottomLip.y || (Math.abs(lipPoint.x - middleBottomLip.x) <= 10))
+            {
+                filtered.add(lipPoint);
+            }
+        }
+
+        return filtered;
     }
 
     private static List<Point> findLowerLipLeftPoints(Point bottomMiddle, Rect mouth, Mat image)
@@ -103,22 +124,4 @@ public class BottomLipPointsDetector
                         (squaresSum - (amount * Math.pow(average, 2))) / (amount - 1)
                 );
     }
-
-    private static Point normalizeByBase(Point point, Point base)
-    {
-        return new Point(point.x - base.x, base.y - point.y);
-    }
-
-    private static Collection<Point> normalizeCollectionByBase(Collection<Point> points, Point base)
-    {
-        List<Point> normalizedPoints = new ArrayList<Point>();
-
-        for (Point point : points)
-        {
-            normalizedPoints.add(normalizeByBase(point, base));
-        }
-
-        return normalizedPoints;
-    }
-
 }

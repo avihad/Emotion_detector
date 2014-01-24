@@ -76,15 +76,15 @@ public class Utilities
 	}
 
 	public static void drawRect(Rect rect, Mat image) {
-		Core.rectangle(image, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 255, 0));
+		Core.rectangle(image, new Point(rect.x, rect.y), new Point(rect.x + rect.width, rect.y + rect.height), new Scalar(0, 0, 0));
 	}
 
 	public static void drawPoint(Point point, Mat image) {
-		Core.line(image, point, new Point(point.x, point.y + 1), new Scalar(0, 255, 0), 5);
+		Core.line(image, point, new Point(point.x, point.y + 1), new Scalar(0, 0, 0), 5);
 	}
 
 	public static void drawLine(Point first, Point second, Mat image) {
-		Core.line(image, first, second, new Scalar(0, 255, 0));
+		Core.line(image, first, second, new Scalar(0, 0, 0));
 	}
 
 	public static void writeImageToFile(String fileName, Mat image) {

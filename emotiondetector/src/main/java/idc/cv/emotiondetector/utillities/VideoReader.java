@@ -1,6 +1,5 @@
 package idc.cv.emotiondetector.utillities;
 
-import idc.cv.emotiondetector.Main;
 import idc.cv.emotiondetector.detectors.MouthDetectorImproved;
 import idc.cv.emotiondetector.smileDetection.SmileCurveFinder;
 import org.opencv.core.Mat;
