@@ -1,0 +1,3 @@
+Manifest-Version: 1.0
+Main-Class: idc.cv.emotiondetector.MovieSampleMain
+Class-Path: ./libs/commons-math-2.2.jar ./libs/opencv-247.jar ./libs/commons-cli-1.1.jar ./libs/junit-3.8.1.jar ./libs/logback-classic-1.0.0.jar ./libs/logback-core-1.0.0.jar ./libs/slf4j-api-1.6.4.jar ./libs/xuggle-xuggler-5.4.jar

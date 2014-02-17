@@ -2,7 +2,7 @@
 @echo off
 
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
-set f=.\\target\\classes\\VideoMagnification\\evm
+set f=%resourcePath%\\VideoMagnification\\evm
 
 :: S=Source, R=Results, MCR=MatlabCompilerRuntime
 

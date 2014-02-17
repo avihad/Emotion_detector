@@ -200,7 +200,7 @@ public enum PulseDetector
 		if (Object.class.getResource(outputFileName) == null) {
 
 			String commandAndArgs = new String("cmd /c start " + Main.resourcePath + "\\VideoMagnification\\videoMagnifier.bat " + movieFileName);
-
+			System.out.println("Magnifier cmd: " + commandAndArgs);
 			// Executing VideoMagnification , after the execution finish it
 			// create a new file called finishMagnifierExe
 			Runtime.getRuntime().exec(commandAndArgs);
