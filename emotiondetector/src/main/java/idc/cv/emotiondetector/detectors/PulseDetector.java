@@ -2,6 +2,7 @@ package idc.cv.emotiondetector.detectors;
 
 import idc.cv.emotiondetector.Main;
 import idc.cv.emotiondetector.MovieMouthTracker;
+import idc.cv.emotiondetector.utillities.Utilities;
 import idc.cv.emotiondetector.utillities.VideoReader;
 
 import java.io.File;
@@ -14,6 +15,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 
 import org.opencv.core.Mat;
+import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.highgui.VideoCapture;
 
@@ -67,29 +69,37 @@ public enum PulseDetector
 		return frameSamples;
 	}
 
+	public static int	index	= 1;
+
 	private double[][] sampleFrame(Mat frame, Rect r) {
 
 		double[][] samples = new double[4][];
 
-		// Mouth frame sample
-		int yIndex = r.height / 2 + r.y;
+		// Forehead frame sample
+		int yIndex = r.y - r.height * 2 - 100;
 		int xIndex = r.width / 2 + r.x;
 		samples[0] = frame.get(yIndex, xIndex);
+		Utilities.drawPoint(new Point(xIndex, yIndex), frame);
 
 		// Nose frame sample
-		yIndex = (int) (r.y + r.height * 1.5);
+		yIndex = (int) (r.y - r.height * 1.5);
 		xIndex = r.width / 2 + r.x;
 		samples[1] = frame.get(yIndex, xIndex);
+		Utilities.drawPoint(new Point(xIndex, yIndex), frame);
 
 		// Left chick frame sample
-		yIndex = (int) (r.y + r.height * 1.5);
-		xIndex = (int) (r.x + r.width * 0.1);
+		yIndex = (int) (r.y - r.height * 1.5);
+		xIndex = (int) (r.x + r.width * 0.1) - 100;
 		samples[2] = frame.get(yIndex, xIndex);
+		Utilities.drawPoint(new Point(xIndex, yIndex), frame);
 
 		// Right chick frame sample
-		yIndex = (int) (r.y + r.height * 1.5);
-		xIndex = (int) (r.x + r.width * 0.9);
+		yIndex = (int) (r.y - r.height * 1.5);
+		xIndex = (int) (r.x + r.width * 0.9) + 100;
 		samples[3] = frame.get(yIndex, xIndex);
+		Utilities.drawPoint(new Point(xIndex, yIndex), frame);
+
+		Utilities.writeImageToFile(Main.outputPath + "avihad" + index++ + ".png", frame);
 
 		return samples;
 
@@ -109,7 +119,7 @@ public enum PulseDetector
 					&& isSampleNotDiffer(comprationsValue, sample.getValue(), threshold)) {
 				identicaleSampleFrameNum.add(sampleKey);
 				comparationFrameNum = sampleKey;
-				comprationsValue = sample.getValue();
+				// comprationsValue = sample.getValue();
 			}
 		}
 
@@ -128,7 +138,7 @@ public enum PulseDetector
 
 			Integer firstFrame = identicaleSampleFrameNum.get(i);
 			Integer secondFrame = identicaleSampleFrameNum.get(i + frameResolution);
-			Double pulse = (movieFrameRate / (secondFrame - firstFrame)) * 60;
+			Double pulse = (movieFrameRate / ((secondFrame - firstFrame) / frameResolution)) * 60;
 
 			pulseByFrame.put(secondFrame, pulse.intValue());
 			System.out.println("Pulse calculation for frames #" + firstFrame + " #" + secondFrame + " is: " + pulse.intValue());
@@ -194,7 +204,7 @@ public enum PulseDetector
 
 		StringBuilder sb = new StringBuilder();
 		sb.append(movieFileName.substring(Main.resourcePath.length() - 1, movieFileName.length() - 4));
-		sb.append("-ideal-from-1-to-1.6667-alpha-50-level-6-chromAtn-1.avi");
+		sb.append("-ideal-from-1.6667-to-2-alpha-50-level-1-chromAtn-1.avi");
 		String outputFileName = sb.toString();
 
 		if (Object.class.getResource(outputFileName) == null) {

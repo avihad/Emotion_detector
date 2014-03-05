@@ -24,7 +24,7 @@ public enum VideoReader
 		return videoCapture;
 	}
 
-	public void storeAsFrames(String videoFileName) throws Exception {
+	public Integer storeAsFrames(String videoFileName) throws Exception {
 		VideoCapture videoCapture = open(videoFileName);
 
 		Mat newFrame = new Mat();
@@ -38,5 +38,6 @@ public enum VideoReader
 			Utilities.writeImageToFile(Main.outputPath + "frame" + frameNumber + ".png", newFrame);
 			frameNumber++;
 		}
+		return frameNumber;
 	}
 }
