@@ -20,7 +20,7 @@ public class PulseDetectorMain
 		try {
 			SortedMap<Integer, double[][]> pulseSamples = PulseDetector.instance.detectPulse(movieFilePath, samplePositionChangeRate);
 
-			SortedMap<Integer, Integer> pulseByFrame = PulseDetector.instance.calcPulseFromSamples(pulseSamples, 25, 5);
+			SortedMap<Integer, Integer> pulseByFrame = PulseDetector.instance.calcPulseFromSamples(pulseSamples, 13, 29);
 
 			// SortedMap<Integer, double[][]> pulseSamples = (SortedMap<Integer,
 			// double[][]>) Utilities.readObjectFromFile("tempSamples");
