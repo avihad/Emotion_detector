@@ -23,8 +23,8 @@ public class Main
 	public static final String	cascadePath		= Main.resourcePath + "\\cascades\\";
 
 	public static void main(String[] args) throws Exception {
-		if (args.length != 5) {
-			System.out.println("USAGE: not enough parametes (require 5 got " + args.length + ")");
+		if (args.length != 7) {
+			System.out.println("USAGE: not enough parametes (require 7 got " + args.length + ")");
 			System.exit(-1);
 		}
 		String naturalInput = resourcePath + args[0];
@@ -34,17 +34,19 @@ public class Main
 		Double smileThreshold = Double.valueOf(args[3]);
 		// 0.001
 		Double naturalThreshold = Double.valueOf(args[4]);
+		Double lowFreq = Double.valueOf(args[5]);
+		Double highFreq = Double.valueOf(args[6]);
 
 		// Load the native library.
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-		analyzeMovie(naturalInput, smileInput, movieName, smileThreshold, naturalThreshold);
+		analyzeMovie(naturalInput, smileInput, movieName, smileThreshold, naturalThreshold, lowFreq, highFreq);
 	}
 
 	private static void analyzeMovie(String neutralImagePath, String smileImagePath, String movieFilePath, double smileThreshold,
-			double neutralThreshold) throws Exception {
+			double neutralThreshold, double lowFreq, double highFreq) throws Exception {
 		// Run the pulse application:
-		SortedMap<Integer, Integer> pulseByFrame = PulseDetectorMain.detectPulse(movieFilePath, 10);
+		SortedMap<Integer, Integer> pulseByFrame = PulseDetectorMain.detectPulse(movieFilePath, lowFreq, highFreq, 10);
 
 		DetectedMovie movie = findSmilesAndGenerateXml(neutralImagePath, smileImagePath, movieFilePath, smileThreshold, neutralThreshold,
 				pulseByFrame);

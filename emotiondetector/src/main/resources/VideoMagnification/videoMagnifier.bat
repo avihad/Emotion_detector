@@ -15,7 +15,7 @@ set PATH=%MCR%;%PATH%
 
 set verNum=v80
 :: set RDIR=Results
-set RDIR=.\target\classes\
+set RDIR=%outputPath%
 
 :: mkdir %RDIR%
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
@@ -24,9 +24,10 @@ set RDIR=.\target\classes\
 ::----------------------------------------------------------
 :: cv_sample2.mp4 video with ideal_filter
 set inFile=%1
+set lowFreq=%2
+set highFreq=%3
 
-%f% %inFile% %RDIR% 25 color 60/60 100/60 50 ideal 1 6
+%f% %inFile% %RDIR% 29 color %lowFreq% %highFreq% 50 ideal 1 1
 
-type NUL > finishMagnifierExe
-
+type NUL > %RDIR%\finishMagnifierExe
 exit

@@ -13,12 +13,13 @@ public class PulseDetectorMain
 	public static void main(String[] args) {
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
 
-		detectPulse(Main.resourcePath + "test.mp4", 20);
+		// detectPulse(Main.resourcePath + "test.mp4", 20);
 	}
 
-	public static SortedMap<Integer, Integer> detectPulse(String movieFilePath, int samplePositionChangeRate) {
+	public static SortedMap<Integer, Integer> detectPulse(String movieFilePath, double lowFreq, double highFreq, int samplePositionChangeRate) {
 		try {
-			SortedMap<Integer, double[][]> pulseSamples = PulseDetector.instance.detectPulse(movieFilePath, samplePositionChangeRate);
+			SortedMap<Integer, double[][]> pulseSamples = PulseDetector.instance.detectPulse(movieFilePath, lowFreq, highFreq,
+					samplePositionChangeRate);
 
 			SortedMap<Integer, Integer> pulseByFrame = PulseDetector.instance.calcPulseFromSamples(pulseSamples, 13, 29);
 

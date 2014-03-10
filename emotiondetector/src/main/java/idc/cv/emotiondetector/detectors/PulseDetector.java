@@ -1,5 +1,7 @@
 package idc.cv.emotiondetector.detectors;
 
+import static org.opencv.imgproc.Imgproc.COLOR_RGB2YUV;
+import static org.opencv.imgproc.Imgproc.cvtColor;
 import idc.cv.emotiondetector.Main;
 import idc.cv.emotiondetector.MovieMouthTracker;
 import idc.cv.emotiondetector.utillities.Utilities;
@@ -19,9 +21,6 @@ import org.opencv.core.Point;
 import org.opencv.core.Rect;
 import org.opencv.highgui.VideoCapture;
 
-import static org.opencv.imgproc.Imgproc.COLOR_RGB2YUV;
-import static org.opencv.imgproc.Imgproc.cvtColor;
-
 public enum PulseDetector
 {
 
@@ -32,13 +31,14 @@ public enum PulseDetector
 	 * calculate the difference between the color of the pixels in the movie
 	 * frames
 	 */
-	public SortedMap<Integer, double[][]> detectPulse(String movieFileName, int samplePositionChangeRate) throws Exception {
+	public SortedMap<Integer, double[][]> detectPulse(String movieFileName, double lowFreq, double highFreq, int samplePositionChangeRate)
+			throws Exception {
 
 		Map<Integer, Rect> mouthPositionsAlongMovie = MovieMouthTracker.getMouthPositionsSelectivlyWithIndices(movieFileName,
 				samplePositionChangeRate);
 		System.out.println("Finish mouth tracker run.");
 
-		return this.detectPulse(movieFileName, mouthPositionsAlongMovie);
+		return this.detectPulse(movieFileName, lowFreq, highFreq, mouthPositionsAlongMovie);
 	}
 
 	/*
@@ -46,10 +46,11 @@ public enum PulseDetector
 	 * calculate the difference between the color of the pixels in the movie
 	 * frames
 	 */
-	public SortedMap<Integer, double[][]> detectPulse(String movieFileName, Map<Integer, Rect> mouthPositionsAlongMovie) throws Exception {
+	public SortedMap<Integer, double[][]> detectPulse(String movieFileName, double lowFreq, double highFreq,
+			Map<Integer, Rect> mouthPositionsAlongMovie) throws Exception {
 
 		// Call video magnifying algorithm
-		String magnifyMovieFileName = executeVideoMagnifyer(movieFileName);
+		String magnifyMovieFileName = executeVideoMagnifyer(movieFileName, lowFreq, highFreq);
 		System.out.println("Finish video magnifier run");
 
 		SortedMap<Integer, double[][]> frameSamples = new TreeMap<>();
@@ -76,9 +77,9 @@ public enum PulseDetector
 
 	private double[][] sampleFrame(Mat frame, Rect r) {
 
-        Mat yuvFrame = new Mat();
+		Mat yuvFrame = new Mat();
 
-        cvtColor(frame, yuvFrame, COLOR_RGB2YUV);
+		cvtColor(frame, yuvFrame, COLOR_RGB2YUV);
 		double[][] samples = new double[4][];
 
 		// Forehead frame sample
@@ -105,10 +106,9 @@ public enum PulseDetector
 		samples[3] = yuvFrame.get(yIndex, xIndex);
 		Utilities.drawPoint(new Point(xIndex, yIndex), frame);
 
-        if (index == 1)
-        {
-		    Utilities.writeImageToFile("pointsLocations" + index++ + ".png", frame);
-        }
+		if (index == 1) {
+			Utilities.writeImageToFile("pointsLocations" + index++ + ".png", frame);
+		}
 
 		return samples;
 
@@ -176,15 +176,14 @@ public enum PulseDetector
 				continue;
 			}
 
-            double yDiff = Math.pow(Math.abs(comprationsValue[i][0] - value[i][0]), 2);
-            double uDiff = Math.pow(Math.abs(comprationsValue[i][1] - value[i][1]), 2);
-            double vDiff = Math.pow(Math.abs(comprationsValue[i][2] - value[i][2]), 2);
-            double diff = Math.sqrt(yDiff + uDiff + vDiff);
+			double yDiff = Math.pow(Math.abs(comprationsValue[i][0] - value[i][0]), 2);
+			double uDiff = Math.pow(Math.abs(comprationsValue[i][1] - value[i][1]), 2);
+			double vDiff = Math.pow(Math.abs(comprationsValue[i][2] - value[i][2]), 2);
+			double diff = Math.sqrt(yDiff + uDiff + vDiff);
 
-            if (diff > threshold)
-            {
-                return false;
-            }
+			if (diff > threshold) {
+				return false;
+			}
 		}
 
 		return true;
@@ -209,28 +208,39 @@ public enum PulseDetector
 		}
 	}
 
-	private String executeVideoMagnifyer(String movieFileName) throws IOException, InterruptedException {
+	private String executeVideoMagnifyer(String movieFileName, double lowFreq, double highFreq) throws IOException, InterruptedException {
 
 		StringBuilder sb = new StringBuilder();
-		sb.append(movieFileName.substring(Main.resourcePath.length() - 1, movieFileName.length() - 4));
-		sb.append("-ideal-from-1.6667-to-2-alpha-50-level-1-chromAtn-1.avi");
-		String outputFileName = sb.toString();
+		sb.append(movieFileName.substring(Main.resourcePath.length(), movieFileName.length() - 4));
+		sb.append("-ideal-from-");
+		String outputFileName = "";
 
-		if (Object.class.getResource(outputFileName) == null) {
+		File dir = new File(Main.outputPath);
 
-			String commandAndArgs = new String("cmd /c start " + Main.resourcePath + "\\VideoMagnification\\videoMagnifier.bat " + movieFileName);
-			System.out.println("Magnifier cmd: " + commandAndArgs);
-			// Executing VideoMagnification , after the execution finish it
-			// create a new file called finishMagnifierExe
-			Runtime.getRuntime().exec(commandAndArgs);
+		// Delete all outputs before running the current videoMagnifier
+		for (File f : dir.listFiles()) {
+			if (f.getName().contains(sb.toString()))
+				f.delete();
+		}
 
-			File f = new File(Main.outputPath + "finishMagnifierExe");
+		String commandAndArgs = new String("cmd /c start " + Main.resourcePath + "\\VideoMagnification\\videoMagnifier.bat " + movieFileName + " "
+				+ lowFreq + " " + highFreq);
+		System.out.println("Magnifier cmd: " + commandAndArgs);
+		// Executing VideoMagnification , after the execution finish it
+		// create a new file called finishMagnifierExe
+		Runtime.getRuntime().exec(commandAndArgs);
 
-			while (!f.exists()) {
-				Thread.sleep(2000);
-			}
+		File f = new File(Main.outputPath + "finishMagnifierExe");
 
-			f.delete();
+		while (!f.exists()) {
+			Thread.sleep(2000);
+		}
+
+		f.delete();
+
+		for (File file : dir.listFiles()) {
+			if (file.getName().contains(sb.toString()))
+				outputFileName = file.getName();
 		}
 
 		return Main.outputPath + outputFileName;
